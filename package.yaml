@@ -1,0 +1,63 @@
+name:                haskell-clean-architecture
+version:             0.1.0.0
+github:              "Github username here/real-world-app"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "Author email here"
+copyright:           "2018 Author name here"
+
+extra-source-files:
+  - README.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            App category here
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/Github username here/real-world-app#readme>
+
+dependencies:
+  - base >= 4.7 && < 5
+  - classy-prelude
+  - pcre-heavy
+  - mtl
+  - data-has
+  - uuid
+  - validation >= 1 && < 1.1
+  - lens >= 4 && < 5
+default-extensions:
+  - NoImplicitPrelude
+  - OverloadedStrings
+  - ConstraintKinds
+  - FlexibleContexts
+  - GeneralizedNewtypeDeriving
+library:
+  source-dirs: src
+  ghc-options:
+    - -Wall
+
+executables:
+  haskell-clean-architecture-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - haskell-clean-architecture
+
+tests:
+  haskell-clean-architecture-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - hspec-discover
+      - haskell-clean-architecture
+      - hspec
