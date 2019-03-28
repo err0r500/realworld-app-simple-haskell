@@ -3,6 +3,7 @@ module App where
 import qualified Adapter.InMemory.Logger   as InMemLogger
 import qualified Adapter.InMemory.UserRepo as InMemUserRepo
 import qualified Adapter.InMemory.UuidGen  as UuidGen
+import qualified Adapter.Logger            as Katip
 import           ClassyPrelude
 import           Usecase.Class
 
@@ -25,7 +26,7 @@ instance Usecase.Class.UserRepo InMemoryApp where
     getUserByEmail = InMemUserRepo.getUserByEmail
 
 instance Usecase.Class.Logger InMemoryApp where
-    log' = InMemLogger.log'
+    log = InMemLogger.log
 
 instance Usecase.Class.UUIDGen InMemoryApp where
     genUUID = UuidGen.genUUIDv4

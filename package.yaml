@@ -4,10 +4,10 @@ github:              "Github username here/real-world-app"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "Author email here"
-copyright:           "2018 Author name here"
+copyright:           "2019 Author name here"
 
 extra-source-files:
-  - README.md
+  - README.md 
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -27,6 +27,7 @@ dependencies:
   - uuid
   - validation >= 1 && < 1.1
   - lens >= 4 && < 5
+  - katip
 default-extensions:
   - NoImplicitPrelude
   - OverloadedStrings

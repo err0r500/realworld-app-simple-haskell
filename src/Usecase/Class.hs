@@ -13,9 +13,9 @@ class Monad m =>
 class Monad m =>
       Logger m
     where
-    log' :: Show a => [a] -> m ()
+    log :: Show a => [a] -> m ()
 
 class Monad m =>
       UUIDGen m
     where
-    genUUID :: m Text
+    genUUID :: m              Text

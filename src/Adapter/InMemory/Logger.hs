@@ -9,8 +9,8 @@ newtype Logs = Logs
 
 type Logger r m = (MonadReader r m, MonadIO m, DH.Has (TVar Logs) r)
 
-log' :: (Logger r m, Show a) => [a] -> m ()
-log' txts = do
+log :: (Logger r m, Show a) => [a] -> m ()
+log txts = do
     tvar <- asks DH.getter
     atomically $ do
         state <- readTVar tvar
@@ -19,6 +19,6 @@ log' txts = do
 getLogs :: Logger r m => m [Text]
 getLogs = do
     tvar <- asks DH.getter
-    atomically $ do
+    atomically $ do 
         state <- readTVar tvar
         return $ logs state

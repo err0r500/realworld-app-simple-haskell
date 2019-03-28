@@ -4,3 +4,4 @@ out/
 haskell-clean-architecture.cabal
 *~
 .hspec-failures
+*.iml
