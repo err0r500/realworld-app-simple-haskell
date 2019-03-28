@@ -1,7 +1,8 @@
 module Usecase.Class where
 
 import           ClassyPrelude
-import qualified Domain.User   as Domain
+import qualified Data.Validation as Validation
+import qualified Domain.User     as Domain
 
 class Monad m =>
       UserRepo m
@@ -18,4 +19,9 @@ class Monad m =>
 class Monad m =>
       UUIDGen m
     where
-    genUUID :: m              Text
+    genUUID :: m Text
+
+class Monad m =>
+      EmailChecker m
+    where
+    checkEmailFormat :: Text -> m (Validation.Validation [Domain.Error] ())

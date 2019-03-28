@@ -7,7 +7,7 @@ maintainer:          "Author email here"
 copyright:           "2019 Author name here"
 
 extra-source-files:
-  - README.md 
+  - README.md
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -28,6 +28,7 @@ dependencies:
   - validation >= 1 && < 1.1
   - lens >= 4 && < 5
   - katip
+  - email-validate
 default-extensions:
   - NoImplicitPrelude
   - OverloadedStrings
