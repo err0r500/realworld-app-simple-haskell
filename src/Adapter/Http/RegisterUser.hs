@@ -1,15 +1,16 @@
 module Adapter.Http.RegisterUser where
 
-import           Adapter.Http.Shared
 import           ClassyPrelude
-import qualified Usecase.UserRegistration
-import qualified Web.Scotty.Trans         as ScottyT
+import           Network.HTTP.Types    (status400)
 
-registerUser :: AppMonadicStack m => ScottyT.ActionT LText m ()
+import qualified Usecase.BusinessLogic as UC
+import qualified Web.Scotty.Trans      as ScottyT
+
+registerUser :: (UC.UserLogic m) => ScottyT.ActionT LText m ()
 registerUser = do
     name <- ScottyT.param "name"
     email <- ScottyT.param "email"
-    resp <- lift $ Usecase.UserRegistration.register name email
+    resp <- lift $ UC.register name email
     case resp of
-        Left err   -> ScottyT.json $ fromStrict $ tshow err
+        Left _     -> ScottyT.status status400
         Right uuid -> ScottyT.html $ fromStrict uuid

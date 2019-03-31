@@ -8,7 +8,10 @@ import qualified Adapter.InMemory.UserRepo as InMemUserRepo
 import qualified Adapter.Logger            as Katip
 import qualified Adapter.UUIDGen           as UUIDGen
 import           ClassyPrelude
-import qualified Usecase.Class             as UC
+import qualified Network.Wai.Handler.Warp  as Warp
+import qualified Usecase.BusinessLogic     as UCLogic
+import qualified Usecase.Class             as UCClasses
+import qualified Usecase.UserRegistration  as UC
 
 type UsersState = TVar InMemUserRepo.UsersState
 
@@ -19,24 +22,28 @@ newtype InMemoryApp a = InMemoryApp
 run :: UsersState -> InMemoryApp a -> IO a
 run state app = runReaderT (unApp app) state
 
-instance UC.UserRepo InMemoryApp where
-    getUserByID = InMemUserRepo.getUserByID
-    getUserByName = InMemUserRepo.getUserByName
-    getUserByEmail = InMemUserRepo.getUserByEmail
-
-instance UC.Logger InMemoryApp where
-    log = Katip.log
-
-instance UC.UUIDGen InMemoryApp where
-    genUUID = UUIDGen.genUUIDv4
-
-instance UC.EmailChecker InMemoryApp where
-    checkEmailFormat = RealEmailChecker.checkEmailFormat
-
 getFreshState :: (MonadIO m) => m UsersState
 getFreshState = newTVarIO $ InMemUserRepo.UsersState mempty
 
 start :: IO ()
 start = do
     state <- getFreshState
-    HttpRouter.start $ run state
+    router <- HttpRouter.start (run state)
+    Warp.run 3000 router
+
+instance UCClasses.UserRepo InMemoryApp where
+    getUserByID = InMemUserRepo.getUserByID
+    getUserByName = InMemUserRepo.getUserByName
+    getUserByEmail = InMemUserRepo.getUserByEmail
+
+instance UCClasses.Logger InMemoryApp where
+    log = Katip.log
+
+instance UCClasses.UUIDGen InMemoryApp where
+    genUUID = UUIDGen.genUUIDv4
+
+instance UCClasses.EmailChecker InMemoryApp where
+    checkEmailFormat = RealEmailChecker.checkEmailFormat
+
+instance UCLogic.UserLogic InMemoryApp where
+    register = UC.register

@@ -32,6 +32,8 @@ dependencies:
   - scotty
   - wai
   - wai-extra
+  - warp
+  - http-types
 
 default-extensions:
   - NoImplicitPrelude
@@ -64,6 +66,8 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - hspec-discover
       - haskell-clean-architecture
+      - hspec-discover
       - hspec
+      - hspec-wai
+      - hspec-wai-json
