@@ -17,19 +17,19 @@ register name email = do
     case collidingEmailCheckResult <* collidingNameCheckResult <* malformedEmailCheckResult of
         Failure errs -> do
             UC.log errs
-            return $ Left errs
+            pure $ Left errs
         Success _ -> Right <$> UC.genUUID
 
 checkNoCollisionUserEmail :: UC.UserRepo m => Text -> m (Validation [Domain.Error] ())
 checkNoCollisionUserEmail email = do
     mayUser <- UC.getUserByEmail email
     case mayUser of
-        Nothing -> return $ _Success # ()
-        Just _  -> return $ _Failure # [Domain.ErrUserEmailAlreadyInUse]
+        Nothing -> pure $ _Success # ()
+        Just _  -> pure $ _Failure # [Domain.ErrUserEmailAlreadyInUse]
 
 checkNoCollisionUserName :: UC.UserRepo m => Text -> m (Validation [Domain.Error] ())
 checkNoCollisionUserName name = do
     mayUser <- UC.getUserByName name
     case mayUser of
-        Nothing -> return $ _Success # ()
-        Just _  -> return $ _Failure # [Domain.ErrUserNameAlreadyInUse]
+        Nothing -> pure $ _Success # ()
+        Just _  -> pure $ _Failure # [Domain.ErrUserNameAlreadyInUse]

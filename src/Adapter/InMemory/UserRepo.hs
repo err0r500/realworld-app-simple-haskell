@@ -16,14 +16,14 @@ insertUser user = do
     atomically $ do
         state <- readTVar tvar
         writeTVar tvar state {users = insertMap ("dl") user $ users state}
-        return $ Right ()
+        pure $ Right ()
 
 getUserByID :: InMemory r m => String -> m (Maybe Domain.User)
 getUserByID userID = do
     tvar <- asks DH.getter
     atomically $ do
         state <- readTVar tvar
-        return $ lookup userID (users state)
+        pure $ lookup userID (users state)
 
 getUserByEmail :: InMemory r m => Text -> m (Maybe Domain.User)
 getUserByEmail email = commonSearch (\u -> email == Domain.email u)
@@ -38,5 +38,5 @@ commonSearch filter_ = do
         state <- readTVar tvar
         let mayUser = filter filter_ $ toList (users state)
          in case mayUser of
-                []     -> return Nothing
-                (x:_) -> return (Just x)
+                []     -> pure Nothing
+                (x:_) -> pure (Just x)

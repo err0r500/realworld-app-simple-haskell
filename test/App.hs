@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 module App where
 
 import qualified Adapter.EmailChecker      as RealEmailChecker

@@ -29,6 +29,10 @@ dependencies:
   - lens >= 4 && < 5
   - katip
   - email-validate
+  - scotty
+  - wai
+  - wai-extra
+
 default-extensions:
   - NoImplicitPrelude
   - OverloadedStrings

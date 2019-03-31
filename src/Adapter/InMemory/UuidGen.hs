@@ -15,6 +15,6 @@ genUUIDv4 = do
     tvar <- asks DH.getter
     atomically $ do
         state <- readTVar tvar
-        return $ _uuid state
+        pure $ _uuid state
 
 
