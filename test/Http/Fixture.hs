@@ -18,13 +18,12 @@ instance UC.UserLogic App where
     register = dispatch2 _register
 
 newtype App a = App
-    { unApp :: ReaderT (Fixture IO) (KatipContextT IO) a
-    } deriving (Applicative, Functor, Monad, MonadReader (Fixture IO), MonadIO, KatipContext, Katip)
+    { unApp :: ReaderT (Fixture IO) IO a
+    } deriving (Applicative, Functor, Monad, MonadReader (Fixture IO), MonadIO)
 
 app :: Fixture IO -> IO Application
 app fixture = do
-    le <- initLogEnv "HAuth" "test"
-    let runner = runKatipContextT le () mempty . flip runReaderT fixture . unApp
+    let runner = flip runReaderT fixture . unApp
     start runner
 
 unimplemented :: a
