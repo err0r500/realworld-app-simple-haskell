@@ -8,6 +8,5 @@ import           Test.Hspec.Wai
 
 spec :: Spec
 spec =
-    describe "health check" $ do
-        with (app emptyFixture) $
-            it "responds with 200 without body" $ get "/" `shouldRespondWith` "" {matchStatus = 200}
+    describe "health check" $
+    with (app emptyFixture) $ it "responds with 200 without body" $ get "/" `shouldRespondWith` "" {matchStatus = 200}

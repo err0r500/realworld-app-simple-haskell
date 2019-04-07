@@ -1,11 +1,11 @@
 module Http.Fixture where
 
-import           Adapter.Http.Router
+import qualified Adapter.Http.Router    as Router
 import           ClassyPrelude
-import           Domain.User           as Domain
+import qualified Domain.User            as Domain
 import           Katip
-import           Network.Wai           (Application)
-import           Usecase.BusinessLogic as UC
+import           Network.Wai            (Application)
+import qualified Usecase.BusinessLogic  as UC
 
 newtype Fixture m = Fixture
     { _register :: Text -> Text -> m (Either [Domain.Error] Text)
@@ -17,14 +17,14 @@ emptyFixture = Fixture {_register = const unimplemented}
 instance UC.UserLogic App where
     register = dispatch2 _register
 
-newtype App a = App
+newtype App a = App 
     { unApp :: ReaderT (Fixture IO) IO a
     } deriving (Applicative, Functor, Monad, MonadReader (Fixture IO), MonadIO)
 
 app :: Fixture IO -> IO Application
 app fixture = do
     let runner = flip runReaderT fixture . unApp
-    start runner
+    Router.start runner
 
 unimplemented :: a
 unimplemented = error "unimplemented"
