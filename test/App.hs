@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 
 module App where
 
@@ -7,7 +6,7 @@ import qualified Adapter.EmailChecker      as RealEmailChecker
 import qualified Adapter.InMemory.Logger   as InMemLogger
 import qualified Adapter.InMemory.UserRepo as InMemUserRepo
 import qualified Adapter.InMemory.UuidGen  as InMemUuidGen
-import qualified Adapter.Logger            as Katip
+import qualified Adapter.InMemory.Hasher as FakeHasher
 import           ClassyPrelude
 import           Usecase.Class
 
@@ -17,17 +16,21 @@ type LoggerState = TVar InMemLogger.Logs
 
 type UUIDGen_ = TVar InMemUuidGen.UUIDGen
 
-newtype InMemoryApp a = InMemoryApp
-    { unApp :: ReaderT (UsersState, LoggerState, UUIDGen_) IO a
-    } deriving (Applicative, Functor, Monad, MonadReader (UsersState, LoggerState, UUIDGen_), MonadIO)
+type Global = (UsersState, LoggerState, UUIDGen_)
 
-run :: (UsersState, LoggerState, UUIDGen_) -> InMemoryApp a -> IO a
-run (state, logger, uuid) app = runReaderT (unApp app) (state, logger, uuid)
+newtype InMemoryApp a = InMemoryApp
+    { unApp :: ReaderT Global IO a
+    } deriving (Applicative, Functor, Monad, MonadReader Global, MonadIO)
+
+
+run :: Global -> InMemoryApp a -> IO a
+run globalState app = runReaderT (unApp app) globalState
 
 instance Usecase.Class.UserRepo InMemoryApp where
     getUserByID = InMemUserRepo.getUserByID
     getUserByName = InMemUserRepo.getUserByName
     getUserByEmail = InMemUserRepo.getUserByEmail
+    getUserByEmailAndHashedPassword = InMemUserRepo.getUserByEmailAndHashedPassword
 
 instance Usecase.Class.Logger InMemoryApp where
     log = InMemLogger.log
@@ -37,3 +40,6 @@ instance Usecase.Class.UUIDGen InMemoryApp where
 
 instance Usecase.Class.EmailChecker InMemoryApp where
     checkEmailFormat = RealEmailChecker.checkEmailFormat
+
+instance Usecase.Class.Hasher InMemoryApp where
+  hashText = FakeHasher.hashText

@@ -6,10 +6,11 @@ import qualified Domain.User     as Domain
 
 class Monad m =>
       UserRepo m
-    where
-    getUserByID :: String -> m (Maybe Domain.User)
-    getUserByEmail :: Text -> m (Maybe Domain.User)
-    getUserByName :: Text -> m (Maybe Domain.User)
+  where
+  getUserByID :: Text -> m (Maybe Domain.User)
+  getUserByEmail :: Text -> m (Maybe Domain.User)
+  getUserByName :: Text -> m (Maybe Domain.User)
+  getUserByEmailAndHashedPassword :: Text -> Text -> m (Maybe Domain.User)
 
 class Monad m =>
       Logger m
@@ -25,3 +26,8 @@ class Monad m =>
       EmailChecker m
     where
     checkEmailFormat :: Text -> m (Validation.Validation [Domain.Error] ())
+
+class Monad m =>
+      Hasher m
+  where
+  hashText :: Text -> m Text

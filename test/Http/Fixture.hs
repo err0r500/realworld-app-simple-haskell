@@ -3,7 +3,6 @@ module Http.Fixture where
 import qualified Adapter.Http.Router    as Router
 import           ClassyPrelude
 import qualified Domain.User            as Domain
-import           Katip
 import           Network.Wai            (Application)
 import qualified Usecase.BusinessLogic  as UC
 

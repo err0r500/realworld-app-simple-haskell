@@ -1,0 +1,40 @@
+module UserLoginSpec (spec) where
+
+import ClassyPrelude
+import           Test.Hspec
+import qualified Adapter.InMemory.Logger   as Logger
+import qualified Adapter.InMemory.UserRepo as UserRepo
+import qualified Adapter.InMemory.UuidGen  as UuidGen
+import qualified Domain.User               as D
+import           App
+import Usecase.UserLogin
+
+fakeUUID :: Text
+fakeUUID = "uuid-1234"
+
+getFreshState :: (MonadIO m) => m App.Global
+getFreshState = do
+  state <- newTVarIO $ UserRepo.UsersState mempty
+  logger <- newTVarIO $ Logger.Logs []
+  uuid <- newTVarIO $ UuidGen.UUIDGen fakeUUID
+  return (state, logger, uuid)
+
+loginUser ::
+     (UsersState, LoggerState, UUIDGen_)
+  -> D.LoginDetails
+  -> IO (Either D.Error D.User)
+loginUser state user =
+  App.run state $ Usecase.UserLogin.login user
+
+spec :: Spec
+spec =
+  describe "user login" $
+  describe "happy case" $
+  it "should return an uuid" $ do
+    state <- getFreshState
+    let userEmail = "userEmail"
+        userPassword = "userPassword"
+        myUser = D.User "userName" userEmail "hasheduserPassword"
+    Right _ <- App.run state $ UserRepo.insertUser myUser
+    foundUser <- loginUser state $ D.LoginDetails userEmail userPassword 
+    foundUser `shouldBe` Right myUser

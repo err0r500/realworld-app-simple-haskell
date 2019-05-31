@@ -1,7 +1,6 @@
 module Http.HealthSpec where
 
 import           ClassyPrelude
-import           Domain.User    as Domain
 import           Http.Fixture
 import           Test.Hspec
 import           Test.Hspec.Wai

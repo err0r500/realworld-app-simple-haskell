@@ -8,9 +8,15 @@ data Error
     | ErrMalformedEmail
     deriving (Show, Eq)
 
-data User = User
-    { name  :: Text
+data User =
+  User
+    { name :: Text
     , email :: Text
+    , password :: Text
+    } deriving ( Show, Eq )
+
+data LoginDetails =
+  LoginDetails
+    { userEmail :: Text
+    , userPassword :: Text
     }
-
-

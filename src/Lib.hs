@@ -35,7 +35,8 @@ instance UCClasses.UserRepo InMemoryApp where
     getUserByID = InMemUserRepo.getUserByID
     getUserByName = InMemUserRepo.getUserByName
     getUserByEmail = InMemUserRepo.getUserByEmail
-
+    getUserByEmailAndHashedPassword = InMemUserRepo.getUserByEmailAndHashedPassword
+    
 instance UCClasses.Logger InMemoryApp where
     log = Katip.log
 
