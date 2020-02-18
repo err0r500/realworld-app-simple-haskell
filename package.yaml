@@ -41,6 +41,7 @@ default-extensions:
   - ConstraintKinds
   - FlexibleContexts
   - GeneralizedNewtypeDeriving
+  - RankNTypes
 library:
   source-dirs: src
   ghc-options:
