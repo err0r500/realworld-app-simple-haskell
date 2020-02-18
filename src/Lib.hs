@@ -36,7 +36,7 @@ instance UCClasses.UserRepo InMemoryApp where
     getUserByName = InMemUserRepo.getUserByName
     getUserByEmail = InMemUserRepo.getUserByEmail
     getUserByEmailAndHashedPassword = InMemUserRepo.getUserByEmailAndHashedPassword
-    
+
 instance UCClasses.Logger InMemoryApp where
     log = Katip.log
 
@@ -47,4 +47,4 @@ instance UCClasses.EmailChecker InMemoryApp where
     checkEmailFormat = RealEmailChecker.checkEmailFormat
 
 instance UCLogic.UserLogic InMemoryApp where
-    register = UC.register
+    register = UC.register RealEmailChecker.checkEmailFormat

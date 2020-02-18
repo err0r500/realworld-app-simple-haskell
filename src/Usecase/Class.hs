@@ -1,8 +1,9 @@
+{-# LANGUAGE RankNTypes #-}
 module Usecase.Class where
 
 import           ClassyPrelude
-import qualified Data.Validation as Validation
-import qualified Domain.User     as Domain
+import qualified Data.Validation               as Validation
+import qualified Domain.User                   as Domain
 
 class Monad m =>
       UserRepo m
@@ -27,7 +28,11 @@ class Monad m =>
     where
     checkEmailFormat :: Text -> m (Validation.Validation [Domain.Error] ())
 
+
 class Monad m =>
       Hasher m
   where
   hashText :: Text -> m Text
+
+type CheckEmailFormatFn m
+        = Monad m => Text -> m (Validation.Validation [Domain.Error] ())
