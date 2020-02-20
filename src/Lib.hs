@@ -1,17 +1,18 @@
 module Lib
-    ( start
-    ) where
+        ( start
+        )
+where
 
-import qualified Adapter.EmailChecker      as RealEmailChecker
-import qualified Adapter.Http.Router       as HttpRouter
-import qualified Adapter.InMemory.UserRepo as InMemUserRepo
-import qualified Adapter.Logger            as Katip
-import qualified Adapter.UUIDGen           as UUIDGen
 import           ClassyPrelude
-import qualified Network.Wai.Handler.Warp  as Warp
-import qualified Usecase.BusinessLogic     as UCLogic
-import qualified Usecase.Class             as UCClasses
-import qualified Usecase.UserRegistration  as UC
+import qualified Adapter.EmailChecker          as RealEmailChecker
+import qualified Adapter.Http.Router           as HttpRouter
+import qualified Adapter.InMemory.UserRepo     as InMemUserRepo
+import qualified Adapter.Logger                as Katip
+import qualified Adapter.UUIDGen               as UUIDGen
+import qualified Network.Wai.Handler.Warp      as Warp
+import qualified Usecase.Class                 as UC
+import qualified Usecase.LogicHandler          as UC
+import qualified Usecase.UserRegistration      as UC
 
 type UsersState = TVar InMemUserRepo.UsersState
 
@@ -25,26 +26,35 @@ run state app = runReaderT (unApp app) state
 getFreshState :: (MonadIO m) => m UsersState
 getFreshState = newTVarIO $ InMemUserRepo.UsersState mempty
 
+
 start :: IO ()
 start = do
-    state <- getFreshState
-    router <- HttpRouter.start (run state)
-    Warp.run 3000 router
+        state  <- getFreshState
+        router <- HttpRouter.start (logicHandler interactor) (run state)
+        Warp.run 3000 router
 
-instance UCClasses.UserRepo InMemoryApp where
-    getUserByID = InMemUserRepo.getUserByID
-    getUserByName = InMemUserRepo.getUserByName
-    getUserByEmail = InMemUserRepo.getUserByEmail
-    getUserByEmailAndHashedPassword = InMemUserRepo.getUserByEmailAndHashedPassword
+interactor :: UC.Interactor InMemoryApp
+interactor = UC.Interactor { UC.userRepo_         = userRepo
+                           , UC.checkEmailFormat_ = mailChecker
+                           , UC.genUUID_          = genU
+                           }
+    where
+        userRepo = UC.UserRepo
+                InMemUserRepo.getUserByID
+                InMemUserRepo.getUserByEmail
+                InMemUserRepo.getUserByName
+                InMemUserRepo.getUserByEmailAndHashedPassword
+        mailChecker = RealEmailChecker.checkEmailFormat
+        genU        = UUIDGen.genUUIDv4
 
-instance UCClasses.Logger InMemoryApp where
-    log = Katip.log
 
-instance UCClasses.UUIDGen InMemoryApp where
-    genUUID = UUIDGen.genUUIDv4
+logicHandler :: UC.Interactor InMemoryApp -> UC.LogicHandler InMemoryApp
+logicHandler i = UC.LogicHandler
+        (UC.register (UC.genUUID_ i)
+                     (UC.checkEmailFormat_ i)
+                     (UC.getUserByEmail_ $ UC.userRepo_ i)
+                     (UC.getUserByName_ $ UC.userRepo_ i)
+        )
 
-instance UCClasses.EmailChecker InMemoryApp where
-    checkEmailFormat = RealEmailChecker.checkEmailFormat
-
-instance UCLogic.UserLogic InMemoryApp where
-    register = UC.register RealEmailChecker.checkEmailFormat
+instance UC.Logger InMemoryApp where
+        log = Katip.log

@@ -2,11 +2,11 @@
 
 module App where
 
-import qualified Adapter.EmailChecker      as RealEmailChecker
-import qualified Adapter.InMemory.Logger   as InMemLogger
-import qualified Adapter.InMemory.UserRepo as InMemUserRepo
-import qualified Adapter.InMemory.UuidGen  as InMemUuidGen
-import qualified Adapter.InMemory.Hasher as FakeHasher
+import qualified Adapter.EmailChecker          as RealEmailChecker
+import qualified Adapter.InMemory.Logger       as InMemLogger
+import qualified Adapter.InMemory.UserRepo     as InMemUserRepo
+import qualified Adapter.InMemory.UuidGen      as InMemUuidGen
+import qualified Adapter.InMemory.Hasher       as FakeHasher
 import           ClassyPrelude
 import           Usecase.Class
 
@@ -26,20 +26,8 @@ newtype InMemoryApp a = InMemoryApp
 run :: Global -> InMemoryApp a -> IO a
 run globalState app = runReaderT (unApp app) globalState
 
-instance Usecase.Class.UserRepo InMemoryApp where
-    getUserByID = InMemUserRepo.getUserByID
-    getUserByName = InMemUserRepo.getUserByName
-    getUserByEmail = InMemUserRepo.getUserByEmail
-    getUserByEmailAndHashedPassword = InMemUserRepo.getUserByEmailAndHashedPassword
-
 instance Usecase.Class.Logger InMemoryApp where
-    log = InMemLogger.log
-
-instance Usecase.Class.UUIDGen InMemoryApp where
-    genUUID = InMemUuidGen.genUUIDv4
-
-instance Usecase.Class.EmailChecker InMemoryApp where
-    checkEmailFormat = RealEmailChecker.checkEmailFormat
+        log = InMemLogger.log
 
 instance Usecase.Class.Hasher InMemoryApp where
-  hashText = FakeHasher.hashText
+        hashText = FakeHasher.hashText

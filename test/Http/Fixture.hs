@@ -1,39 +1,32 @@
 module Http.Fixture where
 
-import qualified Adapter.Http.Router    as Router
+import qualified Adapter.Http.Router           as HttpRouter
 import           ClassyPrelude
-import qualified Domain.User            as Domain
-import           Network.Wai            (Application)
-import qualified Usecase.BusinessLogic  as UC
+import qualified Domain.User                   as Domain
+import qualified Network.Wai                   as Wai
+import qualified Usecase.LogicHandler          as UC
+import qualified Adapter.InMemory.UserRepo     as InMemUserRepo
+import qualified Adapter.EmailChecker          as MailChecker
+import qualified Usecase.Class                 as UC
+import qualified Usecase.UserRegistration      as UC
+import qualified Adapter.Logger                as Katip
 
-newtype Fixture m = Fixture
-    { _register :: Text -> Text -> m (Either [Domain.Error] Text)
-    }
+instance UC.Logger App where
+        log = Katip.log
 
-emptyFixture :: Fixture IO
-emptyFixture = Fixture {_register = const unimplemented}
+newtype App a = App
+    { unApp :: ReaderT (UC.LogicHandler App) IO a
+    } deriving (Applicative, Functor, Monad, MonadReader (UC.LogicHandler App), MonadIO)
 
-instance UC.UserLogic App where
-    register = dispatch2 _register
+app :: UC.LogicHandler App -> IO Wai.Application
+app logicHandler = do
+        let runner = flip runReaderT logicHandler . unApp
+        HttpRouter.start logicHandler runner
 
-newtype App a = App 
-    { unApp :: ReaderT (Fixture IO) IO a
-    } deriving (Applicative, Functor, Monad, MonadReader (Fixture IO), MonadIO)
-
-app :: Fixture IO -> IO Application
-app fixture = do
-    let runner = flip runReaderT fixture . unApp
-    Router.start runner
+emptyFixture :: UC.LogicHandler App
+emptyFixture = UC.LogicHandler { UC.register_ = const unimplemented }
 
 unimplemented :: a
 unimplemented = error "unimplemented"
 
-dispatch :: (MonadIO m, MonadReader r m) => (r -> a -> IO b) -> (a -> m b)
-dispatch getter param = do
-    func <- asks getter
-    liftIO $ func param
 
-dispatch2 :: (MonadIO m, MonadReader r m) => (r -> a -> b -> IO c) -> (a -> b -> m c)
-dispatch2 getter param1 param2 = do
-    func <- asks getter
-    liftIO $ func param1 param2

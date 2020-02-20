@@ -1,31 +1,30 @@
-{-# LANGUAGE RankNTypes #-}
-
 module Usecase.UserRegistration
         ( register
+        , Register
         )
 where
 
 import           ClassyPrelude           hiding ( log )
 import           Control.Lens
 import           Data.Validation
-import qualified Domain.User                   as Domain
+import qualified Domain.User                   as D
 import qualified Usecase.Class                 as UC
 
+type Register m = Monad m => Text -> Text -> m (Either [D.Error] Text)
+
 register
-        :: ( UC.UserRepo m
-           , UC.Logger m
-           , UC.UUIDGen m
-           , UC.EmailChecker m
-           , Monad m
-           )
-        => UC.CheckEmailFormatFn m
-        -> Text
-        -> Text
-        -> m (Either [Domain.Error] Text)
-register checkEmail name email = do
+        :: (UC.Logger m, Monad m)
+        => UC.GenUUID m
+        -> UC.CheckEmailFormat m
+        -> UC.GetUserByEmail m
+        -> UC.GetUserByName m
+        -> Register m
+register genUUID checkEmail getUserByEmail getUserByName name email = do
         malformedEmailCheckResult <- checkEmail email
-        collidingEmailCheckResult <- checkNoCollisionUserEmail email
-        collidingNameCheckResult  <- checkNoCollisionUserName name
+        collidingEmailCheckResult <- checkNoCollisionUserEmail
+                getUserByEmail
+                email
+        collidingNameCheckResult <- checkNoCollisionUserName getUserByName name
         case
                         collidingEmailCheckResult
                         <* collidingNameCheckResult
@@ -34,20 +33,20 @@ register checkEmail name email = do
                         Failure errs -> do
                                 UC.log errs
                                 pure $ Left errs
-                        Success _ -> Right <$> UC.genUUID
+                        Success _ -> Right <$> genUUID
 
 checkNoCollisionUserEmail
-        :: UC.UserRepo m => Text -> m (Validation [Domain.Error] ())
-checkNoCollisionUserEmail email = do
-        mayUser <- UC.getUserByEmail email
+        :: Monad m => UC.GetUserByEmail m -> Text -> m (Validation [D.Error] ())
+checkNoCollisionUserEmail getUserByEmail email = do
+        mayUser <- getUserByEmail email
         case mayUser of
                 Nothing -> pure $ _Success # ()
-                Just _  -> pure $ _Failure # [Domain.ErrUserEmailAlreadyInUse]
+                Just _  -> pure $ _Failure # [D.ErrUserEmailAlreadyInUse]
 
 checkNoCollisionUserName
-        :: UC.UserRepo m => Text -> m (Validation [Domain.Error] ())
-checkNoCollisionUserName name = do
-        mayUser <- UC.getUserByName name
+        :: Monad m => UC.GetUserByName m -> Text -> m (Validation [D.Error] ())
+checkNoCollisionUserName getUserByName name = do
+        mayUser <- getUserByName name
         case mayUser of
                 Nothing -> pure $ _Success # ()
-                Just _  -> pure $ _Failure # [Domain.ErrUserNameAlreadyInUse]
+                Just _  -> pure $ _Failure # [D.ErrUserNameAlreadyInUse]

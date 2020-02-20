@@ -1,32 +1,39 @@
-{-# LANGUAGE RankNTypes #-}
 module Usecase.Class where
 
 import           ClassyPrelude
 import qualified Data.Validation               as Validation
 import qualified Domain.User                   as Domain
 
-class Monad m =>
-      UserRepo m
-  where
-  getUserByID :: Text -> m (Maybe Domain.User)
-  getUserByEmail :: Text -> m (Maybe Domain.User)
-  getUserByName :: Text -> m (Maybe Domain.User)
-  getUserByEmailAndHashedPassword :: Text -> Text -> m (Maybe Domain.User)
+data Interactor m = Interactor {
+  userRepo_ :: UserRepo m,
+  checkEmailFormat_ :: Monad m => CheckEmailFormat m,
+  genUUID_ :: Monad m => GenUUID m
+}
+
+data UserRepo m = UserRepo {
+  getUserByID_ :: Monad m => GetUserByID m,
+  getUserByEmail_ :: Monad m => GetUserByEmail m,
+  getUserByName_ :: Monad m => GetUserByName m,
+  getUserByEmailAndHashedPassword_ :: Monad m => GetUserByEmailAndHashedPassword m
+}
+
+--UserRepo functions
+type GetUserByID m = Monad m => Text -> m (Maybe Domain.User)
+type GetUserByEmail m = Monad m => Text -> m (Maybe Domain.User)
+type GetUserByName m = Monad m => Text -> m (Maybe Domain.User)
+type GetUserByEmailAndHashedPassword m
+        = Monad m => Text -> Text -> m (Maybe Domain.User)
+
+-- Mail utilies
+type CheckEmailFormat m
+        = Monad m => Text -> m (Validation.Validation [Domain.Error] ())
+
+type GenUUID m = Monad m => m Text
 
 class Monad m =>
       Logger m
     where
     log :: Show a => [a] -> m ()
-
-class Monad m =>
-      UUIDGen m
-    where
-    genUUID :: m Text
-
-class Monad m =>
-      EmailChecker m
-    where
-    checkEmailFormat :: Text -> m (Validation.Validation [Domain.Error] ())
 
 
 class Monad m =>
@@ -34,5 +41,3 @@ class Monad m =>
   where
   hashText :: Text -> m Text
 
-type CheckEmailFormatFn m
-        = Monad m => Text -> m (Validation.Validation [Domain.Error] ())

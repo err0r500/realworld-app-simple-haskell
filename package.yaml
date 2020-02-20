@@ -9,14 +9,7 @@ copyright:           "2019 Author name here"
 extra-source-files:
   - README.md
 
-# Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            App category here
-
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/Github username here/real-world-app#readme>
+description:         Please see the README on GitHub at <https://github.com/err0r500/haskell-clean-architecture#readme>
 
 dependencies:
   - base >= 4.7 && < 5
@@ -42,6 +35,7 @@ default-extensions:
   - FlexibleContexts
   - GeneralizedNewtypeDeriving
   - RankNTypes
+
 library:
   source-dirs: src
   ghc-options:

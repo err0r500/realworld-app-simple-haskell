@@ -2,8 +2,8 @@ module Adapter.UUIDGen where
 
 import           ClassyPrelude
 
-import qualified Data.UUID     as UUID
-import qualified Data.UUID.V4  as UUID
+import qualified Data.UUID                     as UUID
+import qualified Data.UUID.V4                  as UUID
 
 newtype UUIDGen = UUIDGen
     { _uuid :: Text

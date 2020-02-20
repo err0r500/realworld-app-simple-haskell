@@ -1,19 +1,17 @@
-
 module UserRegistrationSpec
         ( spec
         )
 where
 
+import           ClassyPrelude
+import           Test.Hspec
 import qualified Adapter.InMemory.Logger       as Logger
-import qualified Adapter.InMemory.UserRepo     as UserRepo
+import qualified Adapter.InMemory.UserRepo     as InMemUserRepo
 import qualified Adapter.InMemory.UuidGen      as UuidGen
 import           App
-import           ClassyPrelude
 import qualified Domain.User                   as D
-import           Test.Hspec
-import           Usecase.UserRegistration
-import qualified Usecase.Class                 as UCC
-                                                ( CheckEmailFormatFn )
+import           Usecase.UserRegistration      as UC
+import qualified Usecase.Class                 as UC
 import qualified Adapter.EmailChecker          as MailChecker
 
 fakeUUID :: Text
@@ -21,21 +19,31 @@ fakeUUID = "uuid-1234"
 
 getFreshState :: (MonadIO m) => m App.Global
 getFreshState = do
-        state  <- newTVarIO $ UserRepo.UsersState mempty
+        state  <- newTVarIO $ InMemUserRepo.UsersState mempty
         logger <- newTVarIO $ Logger.Logs []
         uuid   <- newTVarIO $ UuidGen.UUIDGen fakeUUID
         return (state, logger, uuid)
+
+uc :: Register InMemoryApp
+uc = UC.register (UC.genUUID_ i)
+                 (UC.checkEmailFormat_ i)
+                 (UC.getUserByEmail_ $ UC.userRepo_ i)
+                 (UC.getUserByName_ $ UC.userRepo_ i)
+    where
+        userRepo = UC.UserRepo undefined
+                               InMemUserRepo.getUserByEmail
+                               InMemUserRepo.getUserByName
+                               undefined
+        mailChecker = MailChecker.checkEmailFormat
+        genU        = UuidGen.genUUIDv4
+        i           = UC.Interactor userRepo mailChecker genU
 
 registerUser
         :: (UsersState, LoggerState, UUIDGen_)
         -> Text
         -> Text
         -> IO (Either [D.Error] Text)
-registerUser state name email =
-        App.run state $ Usecase.UserRegistration.register
-                MailChecker.checkEmailFormat
-                name
-                email
+registerUser state name email = App.run state $ uc name email
 
 checkPresentLogs
         :: (Show a) => (UsersState, LoggerState, UUIDGen_) -> [a] -> IO ()
@@ -65,7 +73,8 @@ spec = describe "register user" $ do
                 $ it "should raise an UserEmailAlreadyInUse error"
                 $ do
                           state <- getFreshState
-                          _ <- App.run state $ UserRepo.insertUser previousUser
+                          _     <- App.run state
+                                  $ InMemUserRepo.insertUser previousUser
                           Left resp <- registerUser
                                   state
                                   (D.name currentUser)
@@ -76,7 +85,8 @@ spec = describe "register user" $ do
                 $ it "should raise an UserNameAlreadyInUse error"
                 $ do
                           state <- getFreshState
-                          _ <- App.run state $ UserRepo.insertUser previousUser
+                          _     <- App.run state
+                                  $ InMemUserRepo.insertUser previousUser
                           Left resp <- registerUser
                                   state
                                   (D.name previousUser)
@@ -88,7 +98,8 @@ spec = describe "register user" $ do
                           "should raise an UserNameAlreadyInUse & UserEmailAlreadyInUse errors"
                 $ do
                           state <- getFreshState
-                          _ <- App.run state $ UserRepo.insertUser previousUser
+                          _     <- App.run state
+                                  $ InMemUserRepo.insertUser previousUser
                           Left resp <- registerUser
                                   state
                                   (D.name previousUser)
