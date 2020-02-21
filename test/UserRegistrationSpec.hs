@@ -30,15 +30,15 @@ uc = UC.register (UC.genUUID_ i)
                  (UC.getUserByEmail_ $ UC.userRepo_ i)
                  (UC.getUserByName_ $ UC.userRepo_ i)
     where
-        userRepo = UC.UserRepo undefined
-                               InMem.getUserByEmail
-                               InMem.getUserByName
-                               undefined
-        mailChecker = MailChecker.checkEmailFormat
-        i           = UC.Interactor userRepo
-                                    mailChecker
-                                    (UuidGen.genUUIDFake fakeUUID)
-                                    undefined
+        i = UC.Interactor
+                (UC.UserRepo undefined
+                             InMem.getUserByEmail
+                             InMem.getUserByName
+                             undefined
+                )
+                MailChecker.checkEmailFormat
+                (UuidGen.genUUIDFake fakeUUID)
+                undefined
 
 registerUser :: App.State -> UC.Register IO
 registerUser state = (App.run state .) . uc

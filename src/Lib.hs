@@ -36,8 +36,8 @@ start = do
 
 interactor :: UC.Interactor InMemoryApp
 interactor = UC.Interactor { UC.userRepo_         = userRepo
-                           , UC.checkEmailFormat_ = mailChecker
-                           , UC.genUUID_          = genU
+                           , UC.checkEmailFormat_ = RealEmailChecker.checkEmailFormat
+                           , UC.genUUID_          = UUIDGen.genUUIDv4
                            , UC.hashText_         = InMem.hashText
                            }
     where
@@ -46,8 +46,6 @@ interactor = UC.Interactor { UC.userRepo_         = userRepo
                 InMemUserRepo.getUserByEmail
                 InMemUserRepo.getUserByName
                 InMemUserRepo.getUserByEmailAndHashedPassword
-        mailChecker = RealEmailChecker.checkEmailFormat
-        genU        = UUIDGen.genUUIDv4
 
 logicHandler :: UC.Interactor InMemoryApp -> UC.LogicHandler InMemoryApp
 logicHandler i = UC.LogicHandler
