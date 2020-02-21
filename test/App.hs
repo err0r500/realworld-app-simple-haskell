@@ -1,8 +1,8 @@
 module App where
 
+import qualified Adapter.InMemory.Logger as InMem
+import qualified Adapter.InMemory.UserRepo as InMem
 import           ClassyPrelude
-import qualified Adapter.InMemory.Logger       as InMem
-import qualified Adapter.InMemory.UserRepo     as InMem
 import           Usecase.Class
 
 type State = (TVar InMem.UsersState, TVar InMem.Logs)

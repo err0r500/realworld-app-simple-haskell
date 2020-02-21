@@ -3,14 +3,14 @@ module UserLoginSpec
         )
 where
 
-import           ClassyPrelude
-import           Test.Hspec
+import qualified Adapter.InMemory.Hasher as Hasher
+import qualified Adapter.InMemory.Logger as Logger
+import qualified Adapter.InMemory.UserRepo as UserRepo
 import           App
-import qualified Adapter.InMemory.Logger       as Logger
-import qualified Adapter.InMemory.UserRepo     as UserRepo
-import qualified Adapter.InMemory.Hasher       as Hasher
-import qualified Domain.User                   as D
-import qualified Usecase.UserLogin             as UC
+import           ClassyPrelude
+import qualified Domain.User as D
+import           Test.Hspec
+import qualified Usecase.UserLogin as UC
 
 fakeUUID :: Text
 fakeUUID = "uuid-1234"
