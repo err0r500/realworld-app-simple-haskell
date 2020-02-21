@@ -7,7 +7,7 @@ import           ClassyPrelude
 import           Test.Hspec
 import qualified Adapter.InMemory.Logger       as Logger
 import qualified Adapter.InMemory.UserRepo     as InMemUserRepo
-import qualified Adapter.InMemory.UuidGen      as UuidGen
+import qualified Adapter.UUIDGen               as UuidGen
 import           App
 import qualified Domain.User                   as D
 import           Usecase.UserRegistration      as UC
@@ -22,7 +22,7 @@ getFreshState = do
         state  <- newTVarIO $ InMemUserRepo.UsersState mempty
         logger <- newTVarIO $ Logger.Logs []
         uuid   <- newTVarIO $ UuidGen.UUIDGen fakeUUID
-        return (state, logger, uuid)
+        return (state, logger)
 
 uc :: Register InMemoryApp
 uc = UC.register (UC.genUUID_ i)
@@ -35,19 +35,16 @@ uc = UC.register (UC.genUUID_ i)
                                InMemUserRepo.getUserByName
                                undefined
         mailChecker = MailChecker.checkEmailFormat
-        genU        = UuidGen.genUUIDv4
-        i           = UC.Interactor userRepo mailChecker genU undefined
+        i           = UC.Interactor userRepo
+                                    mailChecker
+                                    (UuidGen.genUUIDFake fakeUUID)
+                                    undefined
 
-registerUser
-        :: (UsersState, LoggerState, UUIDGen_)
-        -> Text
-        -> Text
-        -> IO (Either [D.Error] Text)
+registerUser :: (UsersState, LoggerState) -> UC.Register IO
 registerUser state name email = App.run state $ uc name email
 
-checkPresentLogs
-        :: (Show a) => (UsersState, LoggerState, UUIDGen_) -> [a] -> IO ()
-checkPresentLogs state expectedLogs = do
+getLogs :: (Show a) => (UsersState, LoggerState) -> [a] -> IO ()
+getLogs state expectedLogs = do
         logs <- App.run state Logger.getLogs
         length logs `shouldBe` length expectedLogs
         logs `shouldMatchList` map tshow expectedLogs
@@ -70,7 +67,7 @@ spec = describe "register user" $ do
                                            (D.email currentUser)
                 uuid `shouldBe` fakeUUID
         describe "collision with other user email"
-                $ it "should raise an UserEmailAlreadyInUse error"
+                $ it "raises an UserEmailAlreadyInUse error"
                 $ do
                           state <- getFreshState
                           _     <- App.run state
@@ -80,9 +77,9 @@ spec = describe "register user" $ do
                                   (D.name currentUser)
                                   (D.email previousUser)
                           resp `shouldBe` [D.ErrUserEmailAlreadyInUse]
-                          checkPresentLogs state [D.ErrUserEmailAlreadyInUse]
+                          getLogs state [D.ErrUserEmailAlreadyInUse]
         describe "collision with other user name"
-                $ it "should raise an UserNameAlreadyInUse error"
+                $ it "raises an UserNameAlreadyInUse error"
                 $ do
                           state <- getFreshState
                           _     <- App.run state
@@ -92,10 +89,10 @@ spec = describe "register user" $ do
                                   (D.name previousUser)
                                   (D.email currentUser)
                           resp `shouldBe` [D.ErrUserNameAlreadyInUse]
-                          checkPresentLogs state [D.ErrUserNameAlreadyInUse]
-        describe "collision with other user name & other user name"
+                          getLogs state [D.ErrUserNameAlreadyInUse]
+        describe "collision with other user name & other user email"
                 $ it
-                          "should raise an UserNameAlreadyInUse & UserEmailAlreadyInUse errors"
+                          "raises UserNameAlreadyInUse & UserEmailAlreadyInUse errors"
                 $ do
                           state <- getFreshState
                           _     <- App.run state
@@ -108,17 +105,15 @@ spec = describe "register user" $ do
                                   `shouldMatchList` [ D.ErrUserNameAlreadyInUse
                                                     , D.ErrUserEmailAlreadyInUse
                                                     ]
-                          checkPresentLogs
+                          getLogs
                                   state
                                   [ D.ErrUserNameAlreadyInUse
                                   , D.ErrUserEmailAlreadyInUse
                                   ]
-        describe "malformed email"
-                $ it "should raise an MalformedEmail error"
-                $ do
-                          state     <- getFreshState
-                          Left resp <- registerUser state
-                                                    (D.name currentUser)
-                                                    malformedEmail
-                          resp `shouldMatchList` [D.ErrMalformedEmail]
-                          checkPresentLogs state [D.ErrMalformedEmail]
+        describe "malformed email" $ it "raises an MalformedEmail error" $ do
+                state     <- getFreshState
+                Left resp <- registerUser state
+                                          (D.name currentUser)
+                                          malformedEmail
+                resp `shouldMatchList` [D.ErrMalformedEmail]
+                getLogs state [D.ErrMalformedEmail]

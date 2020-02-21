@@ -11,3 +11,6 @@ newtype UUIDGen = UUIDGen
 
 genUUIDv4 :: MonadIO m => m Text
 genUUIDv4 = liftIO $ UUID.toText <$> UUID.nextRandom
+
+genUUIDFake :: MonadIO m => (Text) -> m Text
+genUUIDFake t = pure t
