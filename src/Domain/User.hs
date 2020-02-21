@@ -6,6 +6,7 @@ data Error
     = ErrUserEmailAlreadyInUse
       | ErrUserNameAlreadyInUse
       | ErrMalformedEmail
+      | ErrUserNotFound
     deriving (Show, Eq)
 
 data User =

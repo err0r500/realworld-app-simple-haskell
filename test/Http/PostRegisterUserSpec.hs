@@ -20,6 +20,7 @@ spec = do
                         $ it "responds with 200 with the uuid"
                         $ post "/username/example@email.com" ""
                         `shouldRespondWith` "blabla" { matchStatus = 200 }
+
         describe "email collision" $ do
                 let
                         coll = emptyFixture

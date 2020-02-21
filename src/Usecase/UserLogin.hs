@@ -7,7 +7,7 @@ import qualified Usecase.Class                 as UC
 type Login m = Monad m => D.LoginDetails -> m (Either D.Error D.User)
 
 login
-        :: (UC.Logger m, Monad m)
+        :: UC.Logger m
         => UC.HashText m
         -> UC.GetUserByEmailAndHashedPassword m
         -> D.LoginDetails
@@ -19,4 +19,4 @@ login hashText getUserByEmailAndHashedPassword loginDetails = do
                 hashedPass
         case foundUser of
                 Just user -> pure $ Right user
-                Nothing   -> pure $ Left D.ErrUserEmailAlreadyInUse
+                Nothing   -> pure $ Left D.ErrUserNotFound

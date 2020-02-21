@@ -12,7 +12,6 @@ import qualified Web.Scotty.Trans              as ScottyT
 import           Usecase.Class                 as UC
 import qualified Usecase.LogicHandler          as UC
 
-
 start
         :: (MonadIO m, UC.Logger m)
         => UC.LogicHandler m

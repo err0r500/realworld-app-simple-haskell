@@ -50,7 +50,7 @@ getLogs state expectedLogs = do
         logs `shouldMatchList` map tshow expectedLogs
 
 spec :: Spec
-spec = describe "register user" $ do
+spec = do
         let     prevUser = D.User { D.name     = "collidingUserName"
                                   , D.email    = "colliding@email.fr"
                                   , D.password = ""

@@ -13,7 +13,7 @@ import qualified Usecase.Class                 as UC
 type Register m = Monad m => Text -> Text -> m (Either [D.Error] Text)
 
 register
-        :: (UC.Logger m, Monad m)
+        :: UC.Logger m
         => UC.GenUUID m
         -> UC.CheckEmailFormat m
         -> UC.GetUserByEmail m
