@@ -12,9 +12,6 @@ import qualified Domain.User as D
 import           Test.Hspec
 import qualified Usecase.UserLogin as UC
 
-fakeUUID :: Text
-fakeUUID = "uuid-1234"
-
 getFreshState :: (MonadIO m) => m App.State
 getFreshState = do
         state  <- newTVarIO $ UserRepo.UsersState mempty
@@ -25,7 +22,7 @@ uc :: UC.Login InMemoryApp
 uc = UC.login Hasher.hashText UserRepo.getUserByEmailAndHashedPassword
 
 loginUser :: App.State -> UC.Login IO
-loginUser state user = App.run state $ uc user
+loginUser state = App.run state . uc
 
 spec :: Spec
 spec =

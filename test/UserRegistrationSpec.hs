@@ -3,16 +3,16 @@ module UserRegistrationSpec
         )
 where
 
-import qualified Adapter.EmailChecker as MailChecker
-import qualified Adapter.InMemory.Logger as Logger
-import qualified Adapter.InMemory.UserRepo as InMem
-import qualified Adapter.UUIDGen as UuidGen
+import qualified Adapter.EmailChecker          as MailChecker
+import qualified Adapter.InMemory.Logger       as Logger
+import qualified Adapter.InMemory.UserRepo     as InMem
+import qualified Adapter.UUIDGen               as UuidGen
 import           App
 import           ClassyPrelude
-import qualified Domain.User as D
+import qualified Domain.User                   as D
 import           Test.Hspec
-import qualified Usecase.Class as UC
-import           Usecase.UserRegistration as UC
+import qualified Usecase.Class                 as UC
+import           Usecase.UserRegistration      as UC
 
 fakeUUID :: Text
 fakeUUID = "uuid-1234"
@@ -41,7 +41,7 @@ uc = UC.register (UC.genUUID_ i)
                                     undefined
 
 registerUser :: App.State -> UC.Register IO
-registerUser state name email = App.run state $ uc name email
+registerUser state = (App.run state .) . uc
 
 getLogs :: (Show a) => App.State -> [a] -> IO ()
 getLogs state expectedLogs = do
