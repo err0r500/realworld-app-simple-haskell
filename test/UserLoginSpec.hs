@@ -8,6 +8,7 @@ import           Test.Hspec
 import           App
 import qualified Adapter.InMemory.Logger       as Logger
 import qualified Adapter.InMemory.UserRepo     as UserRepo
+import qualified Adapter.InMemory.Hasher       as Hasher
 import qualified Adapter.InMemory.UuidGen      as UuidGen
 import qualified Domain.User                   as D
 import qualified Usecase.UserLogin             as UC
@@ -22,12 +23,14 @@ getFreshState = do
         uuid   <- newTVarIO $ UuidGen.UUIDGen fakeUUID
         return (state, logger, uuid)
 
+uc :: UC.Login InMemoryApp
+uc = UC.login Hasher.hashText UserRepo.getUserByEmailAndHashedPassword
+
 loginUser
         :: (UsersState, LoggerState, UUIDGen_)
         -> D.LoginDetails
         -> IO (Either D.Error D.User)
-loginUser state user =
-        App.run state $ UC.login UserRepo.getUserByEmailAndHashedPassword user
+loginUser state user = App.run state $ uc user
 
 spec :: Spec
 spec =

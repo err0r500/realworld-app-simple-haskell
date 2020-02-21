@@ -22,7 +22,7 @@ start logicHandler runner = ScottyT.scottyAppT
         runner
         (do
                 ScottyT.get "/" $ ScottyT.status status200 -- health check
-                ScottyT.post "/:name/:email" $ registerUser $ UC.register_
+                ScottyT.post "/:name/:email" $ registerUser $ UC.userRegister_
                         logicHandler
                 ScottyT.notFound $ ScottyT.status status404
         )

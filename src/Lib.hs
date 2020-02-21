@@ -7,12 +7,14 @@ import           ClassyPrelude
 import qualified Adapter.EmailChecker          as RealEmailChecker
 import qualified Adapter.Http.Router           as HttpRouter
 import qualified Adapter.InMemory.UserRepo     as InMemUserRepo
+import qualified Adapter.InMemory.Hasher       as InMem
 import qualified Adapter.Logger                as Katip
 import qualified Adapter.UUIDGen               as UUIDGen
 import qualified Network.Wai.Handler.Warp      as Warp
 import qualified Usecase.Class                 as UC
 import qualified Usecase.LogicHandler          as UC
 import qualified Usecase.UserRegistration      as UC
+import qualified Usecase.UserLogin             as UC
 
 type UsersState = TVar InMemUserRepo.UsersState
 
@@ -26,7 +28,6 @@ run state app = runReaderT (unApp app) state
 getFreshState :: (MonadIO m) => m UsersState
 getFreshState = newTVarIO $ InMemUserRepo.UsersState mempty
 
-
 start :: IO ()
 start = do
         state  <- getFreshState
@@ -37,6 +38,7 @@ interactor :: UC.Interactor InMemoryApp
 interactor = UC.Interactor { UC.userRepo_         = userRepo
                            , UC.checkEmailFormat_ = mailChecker
                            , UC.genUUID_          = genU
+                           , UC.hashText_         = InMem.hashText
                            }
     where
         userRepo = UC.UserRepo
@@ -47,7 +49,6 @@ interactor = UC.Interactor { UC.userRepo_         = userRepo
         mailChecker = RealEmailChecker.checkEmailFormat
         genU        = UUIDGen.genUUIDv4
 
-
 logicHandler :: UC.Interactor InMemoryApp -> UC.LogicHandler InMemoryApp
 logicHandler i = UC.LogicHandler
         (UC.register (UC.genUUID_ i)
@@ -55,6 +56,10 @@ logicHandler i = UC.LogicHandler
                      (UC.getUserByEmail_ $ UC.userRepo_ i)
                      (UC.getUserByName_ $ UC.userRepo_ i)
         )
+        (UC.login (UC.hashText_ i)
+                  (UC.getUserByEmailAndHashedPassword_ $ UC.userRepo_ i)
+        )
+
 
 instance UC.Logger InMemoryApp where
         log = Katip.log

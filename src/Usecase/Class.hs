@@ -7,9 +7,11 @@ import qualified Domain.User                   as Domain
 data Interactor m = Interactor {
   userRepo_ :: UserRepo m,
   checkEmailFormat_ :: Monad m => CheckEmailFormat m,
-  genUUID_ :: Monad m => GenUUID m
+  genUUID_ :: Monad m => GenUUID m,
+  hashText_ :: Monad m => HashText m
 }
 
+-- UserRepo
 data UserRepo m = UserRepo {
   getUserByID_ :: Monad m => GetUserByID m,
   getUserByEmail_ :: Monad m => GetUserByEmail m,
@@ -17,7 +19,6 @@ data UserRepo m = UserRepo {
   getUserByEmailAndHashedPassword_ :: Monad m => GetUserByEmailAndHashedPassword m
 }
 
---UserRepo functions
 type GetUserByID m = Monad m => Text -> m (Maybe Domain.User)
 type GetUserByEmail m = Monad m => Text -> m (Maybe Domain.User)
 type GetUserByName m = Monad m => Text -> m (Maybe Domain.User)
@@ -28,16 +29,18 @@ type GetUserByEmailAndHashedPassword m
 type CheckEmailFormat m
         = Monad m => Text -> m (Validation.Validation [Domain.Error] ())
 
+-- UUID generation
 type GenUUID m = Monad m => m Text
 
+-- Hasher
+type HashText m = Monad m => Text -> m Text
+
+
+-- Logger
 class Monad m =>
       Logger m
     where
     log :: Show a => [a] -> m ()
 
 
-class Monad m =>
-      Hasher m
-  where
-  hashText :: Text -> m Text
 

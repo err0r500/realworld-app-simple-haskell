@@ -4,13 +4,16 @@ import           ClassyPrelude
 import           Domain.User                   as D
 import qualified Usecase.Class                 as UC
 
+type Login m = Monad m => D.LoginDetails -> m (Either D.Error D.User)
+
 login
-        :: (Monad m, UC.Hasher m)
-        => UC.GetUserByEmailAndHashedPassword m
+        :: (UC.Logger m, Monad m)
+        => UC.HashText m
+        -> UC.GetUserByEmailAndHashedPassword m
         -> D.LoginDetails
         -> m (Either D.Error D.User)
-login getUserByEmailAndHashedPassword loginDetails = do
-        hashedPass <- UC.hashText $ userPassword loginDetails
+login hashText getUserByEmailAndHashedPassword loginDetails = do
+        hashedPass <- hashText $ userPassword loginDetails
         foundUser  <- getUserByEmailAndHashedPassword
                 (userEmail loginDetails)
                 hashedPass

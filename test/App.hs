@@ -1,5 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
-
 module App where
 
 import qualified Adapter.EmailChecker          as RealEmailChecker
@@ -22,12 +20,8 @@ newtype InMemoryApp a = InMemoryApp
     { unApp :: ReaderT Global IO a
     } deriving (Applicative, Functor, Monad, MonadReader Global, MonadIO)
 
-
 run :: Global -> InMemoryApp a -> IO a
 run globalState app = runReaderT (unApp app) globalState
 
 instance Usecase.Class.Logger InMemoryApp where
         log = InMemLogger.log
-
-instance Usecase.Class.Hasher InMemoryApp where
-        hashText = FakeHasher.hashText

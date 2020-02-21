@@ -5,7 +5,7 @@ import           ClassyPrelude
 data Error
     = ErrUserEmailAlreadyInUse
       | ErrUserNameAlreadyInUse
-    | ErrMalformedEmail
+      | ErrMalformedEmail
     deriving (Show, Eq)
 
 data User =

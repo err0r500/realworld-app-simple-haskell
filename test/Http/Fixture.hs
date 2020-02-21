@@ -24,7 +24,9 @@ app logicHandler = do
         HttpRouter.start logicHandler runner
 
 emptyFixture :: UC.LogicHandler App
-emptyFixture = UC.LogicHandler { UC.register_ = const unimplemented }
+emptyFixture = UC.LogicHandler { UC.userRegister_ = const unimplemented
+                               , UC.userLogin_    = const unimplemented
+                               }
 
 unimplemented :: a
 unimplemented = error "unimplemented"

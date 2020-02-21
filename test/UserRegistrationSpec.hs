@@ -36,7 +36,7 @@ uc = UC.register (UC.genUUID_ i)
                                undefined
         mailChecker = MailChecker.checkEmailFormat
         genU        = UuidGen.genUUIDv4
-        i           = UC.Interactor userRepo mailChecker genU
+        i           = UC.Interactor userRepo mailChecker genU undefined
 
 registerUser
         :: (UsersState, LoggerState, UUIDGen_)
