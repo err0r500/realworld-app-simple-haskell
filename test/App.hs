@@ -1,22 +1,18 @@
 module App where
 
-import qualified Adapter.InMemory.Logger       as InMemLogger
-import qualified Adapter.InMemory.UserRepo     as InMemUserRepo
 import           ClassyPrelude
+import qualified Adapter.InMemory.Logger       as InMem
+import qualified Adapter.InMemory.UserRepo     as InMem
 import           Usecase.Class
 
-type UsersState = TVar InMemUserRepo.UsersState
-
-type LoggerState = TVar InMemLogger.Logs
-
-type Global = (UsersState, LoggerState)
+type State = (TVar InMem.UsersState, TVar InMem.Logs)
 
 newtype InMemoryApp a = InMemoryApp
-    { unApp :: ReaderT Global IO a
-    } deriving (Applicative, Functor, Monad, MonadReader Global, MonadIO)
+    { unApp :: ReaderT State IO a
+    } deriving (Applicative, Functor, Monad, MonadReader State, MonadIO)
 
-run :: Global -> InMemoryApp a -> IO a
+run :: State -> InMemoryApp a -> IO a
 run globalState app = runReaderT (unApp app) globalState
 
 instance Usecase.Class.Logger InMemoryApp where
-        log = InMemLogger.log
+        log = InMem.log

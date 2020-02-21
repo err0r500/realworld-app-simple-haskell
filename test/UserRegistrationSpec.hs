@@ -17,7 +17,7 @@ import qualified Adapter.EmailChecker          as MailChecker
 fakeUUID :: Text
 fakeUUID = "uuid-1234"
 
-getFreshState :: (MonadIO m) => m App.Global
+getFreshState :: (MonadIO m) => m App.State
 getFreshState = do
         state  <- newTVarIO $ InMemUserRepo.UsersState mempty
         logger <- newTVarIO $ Logger.Logs []
@@ -40,10 +40,10 @@ uc = UC.register (UC.genUUID_ i)
                                     (UuidGen.genUUIDFake fakeUUID)
                                     undefined
 
-registerUser :: (UsersState, LoggerState) -> UC.Register IO
+registerUser :: App.State -> UC.Register IO
 registerUser state name email = App.run state $ uc name email
 
-getLogs :: (Show a) => (UsersState, LoggerState) -> [a] -> IO ()
+getLogs :: (Show a) => App.State -> [a] -> IO ()
 getLogs state expectedLogs = do
         logs <- App.run state Logger.getLogs
         length logs `shouldBe` length expectedLogs

@@ -15,7 +15,7 @@ import qualified Usecase.UserLogin             as UC
 fakeUUID :: Text
 fakeUUID = "uuid-1234"
 
-getFreshState :: (MonadIO m) => m App.Global
+getFreshState :: (MonadIO m) => m App.State
 getFreshState = do
         state  <- newTVarIO $ UserRepo.UsersState mempty
         logger <- newTVarIO $ Logger.Logs []
@@ -24,7 +24,7 @@ getFreshState = do
 uc :: UC.Login InMemoryApp
 uc = UC.login Hasher.hashText UserRepo.getUserByEmailAndHashedPassword
 
-loginUser :: (UsersState, LoggerState) -> UC.Login IO
+loginUser :: App.State -> UC.Login IO
 loginUser state user = App.run state $ uc user
 
 spec :: Spec

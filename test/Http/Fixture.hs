@@ -1,12 +1,11 @@
 module Http.Fixture where
 
-import qualified Adapter.Http.Router           as HttpRouter
 import           ClassyPrelude
+import qualified Adapter.Http.Router           as HttpRouter
 import qualified Domain.User                   as Domain
 import qualified Network.Wai                   as Wai
 import qualified Usecase.LogicHandler          as UC
 import qualified Adapter.InMemory.UserRepo     as InMemUserRepo
-import qualified Adapter.EmailChecker          as MailChecker
 import qualified Usecase.Class                 as UC
 import qualified Usecase.UserRegistration      as UC
 import qualified Adapter.Logger                as Katip
