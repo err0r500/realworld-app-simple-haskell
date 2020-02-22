@@ -1,8 +1,9 @@
 module App where
 
-import qualified Adapter.InMemory.Logger as InMem
-import qualified Adapter.InMemory.UserRepo as InMem
+import qualified Adapter.InMemory.Logger       as InMem
+import qualified Adapter.InMemory.UserRepo     as InMem
 import           ClassyPrelude
+import qualified Adapter.Logger                as Katip
 import           Usecase.Class
 
 type State = (TVar InMem.UsersState, TVar InMem.Logs)
@@ -14,5 +15,5 @@ newtype InMemoryApp a = InMemoryApp
 run :: State -> InMemoryApp a -> IO a
 run globalState app = runReaderT (unApp app) globalState
 
-instance Usecase.Class.Logger InMemoryApp where
+instance Logger InMemoryApp where
         log = InMem.log

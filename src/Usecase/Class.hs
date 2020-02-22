@@ -3,6 +3,7 @@ module Usecase.Class where
 import           ClassyPrelude
 import qualified Data.Validation               as Validation
 import qualified Domain.User                   as Domain
+import qualified Adapter.Logger                   as Logger
 
 data Interactor m = Interactor {
   userRepo_ :: UserRepo m,
@@ -40,7 +41,7 @@ type HashText m = Monad m => Text -> m Text
 class Monad m =>
       Logger m
     where
-    log :: Show a => [a] -> m ()
+    log :: Logger.Loggable a => [a] -> m ()
 
 
 
