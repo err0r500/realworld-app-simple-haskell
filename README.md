@@ -1,3 +1,4 @@
+[![Simple Haskell](http://simplehaskell.org/badges/badge.svg)](http://simplehaskell.org)
 # Boring Haskell "Real world app"
 
 A "boring Haskell" web app (ie without super fancy CS abstractions) in order to show how Haskell shines at building "standard" apps with industrial practices (tdd & bdd).
