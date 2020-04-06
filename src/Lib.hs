@@ -4,7 +4,7 @@ module Lib
 where
 
 import           ClassyPrelude
-import           System.Environment
+import qualified Config.Config                 as Config
 import qualified Adapter.EmailChecker          as RealEmailChecker
 import qualified Adapter.Http.Router           as HttpRouter
 import qualified Adapter.InMemory.UserRepo     as InMemUserRepo
@@ -33,21 +33,10 @@ start :: IO ()
 start = do
         putStrLn "== Haskel Clean Architecture =="
         state  <- getFreshState
-        router <- HttpRouter.start (logicHandler interactor) (run state)
-        port   <- getPort
+        router <- HttpRouter.start (logicHandler interactor) $ run state
+        port   <- Config.getIntFromEnv "PORT" 3000
         putStrLn $ "starting server on port: " ++ tshow port
         Warp.run port router
-
-
-getPort :: IO Int
-getPort = do
-        result <- tryIOError $ getEnv "PORT"
-        case result of
-                Left  _           -> pure defaultPort
-                Right portFromEnv -> case readMay portFromEnv :: Maybe Int of
-                        Just x  -> pure x
-                        Nothing -> pure defaultPort
-        where defaultPort = 3000
 
 interactor :: UC.Interactor InMemoryApp
 interactor = UC.Interactor
