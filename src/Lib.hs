@@ -4,6 +4,7 @@ module Lib
 where
 
 import           ClassyPrelude
+import           System.Environment
 import qualified Adapter.EmailChecker          as RealEmailChecker
 import qualified Adapter.Http.Router           as HttpRouter
 import qualified Adapter.InMemory.UserRepo     as InMemUserRepo
@@ -30,16 +31,31 @@ getFreshState = newTVarIO $ InMemUserRepo.UsersState mempty
 
 start :: IO ()
 start = do
+        putStrLn "== Haskel Clean Architecture =="
         state  <- getFreshState
         router <- HttpRouter.start (logicHandler interactor) (run state)
-        Warp.run 3000 router
+        port   <- getPort
+        putStrLn $ "starting server on port: " ++ tshow port
+        Warp.run port router
+
+
+getPort :: IO Int
+getPort = do
+        result <- tryIOError $ getEnv "PORT"
+        case result of
+                Left  _           -> pure defaultPort
+                Right portFromEnv -> case readMay portFromEnv :: Maybe Int of
+                        Just x  -> pure x
+                        Nothing -> pure defaultPort
+        where defaultPort = 3000
 
 interactor :: UC.Interactor InMemoryApp
-interactor = UC.Interactor { UC.userRepo_         = userRepo
-                           , UC.checkEmailFormat_ = RealEmailChecker.checkEmailFormat
-                           , UC.genUUID_          = UUIDGen.genUUIDv4
-                           , UC.hashText_         = InMem.hashText
-                           }
+interactor = UC.Interactor
+        { UC.userRepo_         = userRepo
+        , UC.checkEmailFormat_ = RealEmailChecker.checkEmailFormat
+        , UC.genUUID_          = UUIDGen.genUUIDv4
+        , UC.hashText_         = InMem.hashText
+        }
     where
         userRepo = UC.UserRepo
                 InMemUserRepo.getUserByID
