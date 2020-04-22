@@ -41,7 +41,7 @@ uc = UC.register (UC.genUUID_ i)
                 undefined
 
 registerUser :: App.State -> UC.Register IO
-registerUser state = (App.run state .) . uc
+registerUser state name email = App.run state $ uc name email
 
 getLogs :: (Show a) => App.State -> [a] -> IO ()
 getLogs state expectedLogs = do
