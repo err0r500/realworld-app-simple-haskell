@@ -1,68 +1,66 @@
 module Lib
-        ( start
-        )
+  ( start
+  )
 where
 
-import           ClassyPrelude
-import qualified Config.Config                 as Config
-import qualified Adapter.EmailChecker          as RealEmailChecker
-import qualified Adapter.Http.Router           as HttpRouter
-import qualified Adapter.InMemory.UserRepo     as InMemUserRepo
-import qualified Adapter.InMemory.Hasher       as InMem
-import qualified Adapter.Logger                as Katip
-import qualified Adapter.UUIDGen               as UUIDGen
+import           RIO
+import           System.IO
+
 import qualified Network.Wai.Handler.Warp      as Warp
-import qualified Usecase.Class                 as UC
+
+import qualified Config.Config                 as Config
+import qualified Adapter.EmailChecker          as EmailChecker
+import qualified Adapter.Http.Router           as Router
+import qualified Adapter.InMemory.UserRepo     as UserRepo
+import qualified Adapter.Fake.Hasher           as Hasher
+import qualified Adapter.Logger                as Logger
+import qualified Adapter.UUIDGen               as UUIDGen
+
+import qualified Usecase.Interactor            as UC
 import qualified Usecase.LogicHandler          as UC
 import qualified Usecase.UserRegistration      as UC
 import qualified Usecase.UserLogin             as UC
 
-type UsersState = TVar InMemUserRepo.UsersState
+type State = TVar UserRepo.Store
 
-newtype InMemoryApp a = InMemoryApp
-    { unApp :: ReaderT UsersState IO a
-    } deriving (Applicative, Functor, Monad, MonadReader UsersState, MonadIO)
+newtype App a = App (RIO State a) deriving (Applicative, Functor, Monad, MonadReader State, MonadIO)
 
-run :: UsersState -> InMemoryApp a -> IO a
-run state app = runReaderT (unApp app) state
-
-getFreshState :: (MonadIO m) => m UsersState
-getFreshState = newTVarIO $ InMemUserRepo.UsersState mempty
+run :: State -> App a -> IO a
+run state (App app) = runRIO state app
 
 start :: IO ()
 start = do
-        putStrLn "== Haskel Clean Architecture =="
-        state  <- getFreshState
-        router <- HttpRouter.start (logicHandler interactor) $ run state
-        port   <- Config.getIntFromEnv "PORT" 3000
-        putStrLn $ "starting server on port: " ++ tshow port
-        Warp.run port router
+  putStrLn "== Haskel Clean Architecture =="
+  state  <- freshState
+  router <- Router.start (logicHandler interactor) $ run state
+  port   <- Config.getIntFromEnv "PORT" 3000
+  putStrLn $ "starting server on port: " ++ show port
+  Warp.run port router
 
-interactor :: UC.Interactor InMemoryApp
-interactor = UC.Interactor
-        { UC.userRepo_         = userRepo
-        , UC.checkEmailFormat_ = RealEmailChecker.checkEmailFormat
-        , UC.genUUID_          = UUIDGen.genUUIDv4
-        , UC.hashText_         = InMem.hashText
-        }
-    where
-        userRepo = UC.UserRepo
-                InMemUserRepo.getUserByID
-                InMemUserRepo.getUserByEmail
-                InMemUserRepo.getUserByName
-                InMemUserRepo.getUserByEmailAndHashedPassword
+interactor :: UC.Interactor App
+interactor = UC.Interactor { UC.userRepo_         = userRepo
+                           , UC.checkEmailFormat_ = EmailChecker.checkEmailFormat
+                           , UC.genUUID_          = UUIDGen.genUUIDv4
+                           , UC.hashText_         = Hasher.hashText
+                           }
+ where
+  userRepo = UC.UserRepo UserRepo.getUserByID
+                         UserRepo.getUserByEmail
+                         UserRepo.getUserByName
+                         UserRepo.getUserByEmailAndHashedPassword
 
-logicHandler :: UC.Interactor InMemoryApp -> UC.LogicHandler InMemoryApp
+logicHandler :: UC.Interactor App -> UC.LogicHandler App
 logicHandler i = UC.LogicHandler
-        (UC.register (UC.genUUID_ i)
-                     (UC.checkEmailFormat_ i)
-                     (UC.getUserByEmail_ $ UC.userRepo_ i)
-                     (UC.getUserByName_ $ UC.userRepo_ i)
-        )
-        (UC.login (UC.hashText_ i)
-                  (UC.getUserByEmailAndHashedPassword_ $ UC.userRepo_ i)
-        )
+  (UC.register (UC.genUUID_ i)
+               (UC.checkEmailFormat_ i)
+               (UC.getUserByEmail_ $ UC.userRepo_ i)
+               (UC.getUserByName_ $ UC.userRepo_ i)
+  )
+  (UC.login (UC.hashText_ i) (UC.getUserByEmailAndHashedPassword_ $ UC.userRepo_ i))
 
 
-instance UC.Logger InMemoryApp where
-        log = Katip.log
+freshState :: (MonadIO m) => m State
+freshState = newTVarIO $ UserRepo.Store mempty
+
+instance UC.Logger App where
+  log = Logger.log

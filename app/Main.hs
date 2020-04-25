@@ -1,6 +1,6 @@
 module Main where
 
-import           ClassyPrelude
+import           RIO
 import           Lib
 
 main :: IO ()

@@ -1,17 +1,18 @@
 module Config.Config
-        ( getIntFromEnv
-        )
+  ( getIntFromEnv
+  )
 where
 
+import           RIO
 import           System.Environment
-import           ClassyPrelude
+import qualified System.IO.Error               as IOError
 
 getIntFromEnv :: String -> Int -> IO Int
 getIntFromEnv key defaultValue = do
-        result <- tryIOError $ getEnv key
-        case result of
-                Left  _           -> pure defaultValue
-                Right portFromEnv -> case readMay portFromEnv :: Maybe Int of
-                        Just x  -> pure x
-                        Nothing -> pure defaultValue
+  result <- IOError.tryIOError $ getEnv key
+  case result of
+    Left  _           -> pure defaultValue
+    Right portFromEnv -> case readMaybe portFromEnv :: Maybe Int of
+      Just x  -> pure x
+      Nothing -> pure defaultValue
 

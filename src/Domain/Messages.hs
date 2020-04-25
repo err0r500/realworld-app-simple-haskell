@@ -2,7 +2,7 @@
 
 module Domain.Messages where
 
-import           ClassyPrelude
+import           RIO
 
 data Message a where
      ErrorMsg ::Show a => a -> Message a
@@ -12,7 +12,7 @@ data Message a where
 
 
 instance Show (Message a) where
-        show (ErrorMsg   a) = show a
-        show (WarningMsg a) = show a
-        show (InfoMsg    a) = show a
-        show (DebugMsg   a) = show a
+  show (ErrorMsg   a) = show a
+  show (WarningMsg a) = show a
+  show (InfoMsg    a) = show a
+  show (DebugMsg   a) = show a

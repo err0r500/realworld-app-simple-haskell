@@ -1,6 +1,6 @@
 module Domain.User where
 
-import           ClassyPrelude
+import           RIO
 
 data Error
     = ErrUserEmailAlreadyInUse
@@ -11,13 +11,13 @@ data Error
 
 data User =
   User
-    { name :: Text
-    , email :: Text
-    , password :: Text
+    { name :: !Text
+    , email :: !Text
+    , password :: !Text
     } deriving ( Show, Eq )
 
 data LoginDetails =
   LoginDetails
-    { userEmail :: Text
-    , userPassword :: Text
+    { userEmail :: !Text
+    , userPassword :: !Text
     }

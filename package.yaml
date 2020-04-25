@@ -13,20 +13,22 @@ description:         Please see the README on GitHub at <https://github.com/err0
 
 dependencies:
   - base >= 4.7 && < 5
-  - classy-prelude
-  - pcre-heavy
-  - mtl
+  - rio >= 0.1.15.0 && < 0.2
   - data-has
-  - uuid
-  - validation >= 1 && < 1.1
-  - lens >= 4 && < 5
-  - katip
-  - email-validate
+
+  # the logger
+  - katip >= 0.8.4.0
+
+  # the http server, may be replaced by servant
   - scotty
   - wai
   - wai-extra
   - warp
   - http-types
+
+  - uuid
+  - validation >= 1 && < 1.1
+  - email-validate
 
 default-extensions:
   - NoImplicitPrelude
@@ -35,6 +37,7 @@ default-extensions:
   - FlexibleContexts
   - GeneralizedNewtypeDeriving
   - RankNTypes
+  - MonoLocalBinds
 
 library:
   source-dirs: src

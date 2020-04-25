@@ -1,14 +1,15 @@
 module Http.HealthSpec where
 
-import           ClassyPrelude
-import           Http.Fixture
+import           RIO
 import           Test.Hspec
 import           Test.Hspec.Wai
 
+import           Http.Lib
+
 spec :: Spec
 spec =
-        describe "health check"
-                $                   with (app emptyFixture)
-                $                   it "responds with 200 without body"
-                $                   get "/"
-                `shouldRespondWith` "" { matchStatus = 200 }
+  describe "health check"
+    $                   with (start undefined)
+    $                   it "responds with 200 without body"
+    $                   get "/"
+    `shouldRespondWith` "" { matchStatus = 200 }

@@ -8,7 +8,7 @@ module Adapter.Logger where
 
 import           Control.Exception
 import           Katip
-import           ClassyPrelude
+import           RIO
 import qualified Domain.Messages               as D
 import qualified Domain.User                   as D
 
