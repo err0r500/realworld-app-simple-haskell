@@ -34,10 +34,10 @@ run :: State -> App a -> IO a
 run state (App app) = runRIO state app
 
 interactor :: UC.Interactor App
-interactor = UC.Interactor { UC.userRepo_         = userRepo
-                           , UC.checkEmailFormat_ = EmailChecker.checkEmailFormat
-                           , UC.genUUID_          = UUIDGen.genUUIDv4
-                           , UC.hashText_         = Hasher.hashText
+interactor = UC.Interactor { UC._userRepo         = userRepo
+                           , UC._checkEmailFormat = EmailChecker.checkEmailFormat
+                           , UC._genUUID          = UUIDGen.genUUIDv4
+                           , UC._hash             = Hasher.hash
                            }
  where
   userRepo = UC.UserRepo UserRepo.getUserByID
@@ -47,12 +47,12 @@ interactor = UC.Interactor { UC.userRepo_         = userRepo
 
 logicHandler :: UC.Interactor App -> UC.LogicHandler App
 logicHandler i = UC.LogicHandler
-  (UC.register (UC.genUUID_ i)
-               (UC.checkEmailFormat_ i)
-               (UC.getUserByEmail_ $ UC.userRepo_ i)
-               (UC.getUserByName_ $ UC.userRepo_ i)
+  (UC.register (UC._genUUID i)
+               (UC._checkEmailFormat i)
+               (UC._getUserByEmail $ UC._userRepo i)
+               (UC._getUserByName $ UC._userRepo i)
   )
-  (UC.login (UC.hashText_ i) (UC.getUserByEmailAndHashedPassword_ $ UC.userRepo_ i))
+  (UC.login (UC._hash i) (UC._getUserByEmailAndHashedPassword $ UC._userRepo i))
 
 
 freshState :: (MonadIO m) => m State

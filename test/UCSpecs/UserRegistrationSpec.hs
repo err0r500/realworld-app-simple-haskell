@@ -19,10 +19,10 @@ import qualified Usecase.Interactor            as UC
 import qualified Usecase.UserRegistration      as UC
 
 uc :: UC.Register App
-uc = UC.register (UC.genUUID_ i)
-                 (UC.checkEmailFormat_ i)
-                 (UC.getUserByEmail_ $ UC.userRepo_ i)
-                 (UC.getUserByName_ $ UC.userRepo_ i)
+uc = UC.register (UC._genUUID i)
+                 (UC._checkEmailFormat i)
+                 (UC._getUserByEmail $ UC._userRepo i)
+                 (UC._getUserByName $ UC._userRepo i)
  where
   i = UC.Interactor (UC.UserRepo undefined InMem.getUserByEmail InMem.getUserByName undefined)
                     MailChecker.checkEmailFormat
