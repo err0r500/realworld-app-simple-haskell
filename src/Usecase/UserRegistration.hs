@@ -29,12 +29,7 @@ register genUUID checkEmail getUserByEmail getUserByName name email = do
       pure $ Left errs
 
 combine :: [Maybe [a]] -> [a]
-combine xs = concat $ map
-  (\x -> case x of
-    Nothing   -> []
-    Just errs -> errs
-  )
-  xs
+combine xs = concat $ map concat xs
 
 checkNoCollisionUserEmail :: Monad m => UC.GetUserByEmail m -> Text -> m (Maybe [D.Error])
 checkNoCollisionUserEmail getUserByEmail email = do

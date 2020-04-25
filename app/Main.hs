@@ -55,7 +55,7 @@ logicHandler i = UC.LogicHandler
   (UC.login (UC._hash i) (UC._getUserByEmailAndHashedPassword $ UC._userRepo i))
 
 
-freshState :: (MonadIO m) => m State
+freshState :: MonadIO m => m State
 freshState = newTVarIO $ UserRepo.Store mempty
 
 instance UC.Logger App where

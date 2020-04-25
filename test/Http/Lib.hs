@@ -20,7 +20,7 @@ start :: UC.LogicHandler App -> IO Wai.Application
 start app = Router.start app $ run
 
 emptyLogicH :: UC.LogicHandler App
-emptyLogicH = UC.LogicHandler { UC.userRegister_ = undefined, UC.userLogin_ = undefined }
+emptyLogicH = UC.LogicHandler { UC._userRegister = undefined, UC._userLogin = undefined }
 
 instance UC.Logger App where
   log = Logger.log
