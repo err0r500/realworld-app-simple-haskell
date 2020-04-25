@@ -1,7 +1,7 @@
 name:                haskell-clean-architecture
 version:             0.1.0.0
 github:              "Github username here/real-world-app"
-license:             BSD3
+license:             GPL-3
 author:              "Author name here"
 maintainer:          "Author email here"
 copyright:           "2019 Author name here"
@@ -27,7 +27,6 @@ dependencies:
   - http-types
 
   - uuid
-  - validation >= 1 && < 1.1
   - email-validate
 
 default-extensions:

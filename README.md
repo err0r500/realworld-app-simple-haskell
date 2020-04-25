@@ -1,7 +1,7 @@
 [![Simple Haskell](http://simplehaskell.org/badges/badge.svg)](http://simplehaskell.org)
-# Boring Haskell "Real world app"
+# Simple Haskell "Real world app"
 
-A "boring Haskell" web app (ie without super fancy CS abstractions) in order to show how Haskell shines at building "standard" apps with industrial practices (tdd & bdd).
+A "simple Haskell" web app in order to show how Haskell shines at building "standard" apps with industrial practices (tdd & bdd).
 
 It aims to implement the [real world app](https://github.com/gothinkster/realworld) API
 
@@ -12,3 +12,8 @@ It aims to implement the [real world app](https://github.com/gothinkster/realwor
 - Postgresql : TODO
 - OpenTracing : TODO ?
 
+## TDD
+
+```
+stack test --fast --file-watch
+```
