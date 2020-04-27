@@ -5,10 +5,10 @@ module Domain.Messages where
 import           RIO
 
 data Message a where
-     ErrorMsg ::Show a => a -> Message a
-     WarningMsg ::Show a => a -> Message a
-     InfoMsg ::Show a => a -> Message a
-     DebugMsg ::Show a => a -> Message a
+  ErrorMsg ::Show a => a -> Message a
+  WarningMsg ::Show a => a -> Message a
+  InfoMsg ::Show a => a -> Message a
+  DebugMsg ::Show a => a -> Message a
 
 
 instance Show (Message a) where

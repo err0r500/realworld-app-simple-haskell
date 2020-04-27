@@ -7,17 +7,17 @@ import qualified Adapter.Logger                as Logger
 
 data Interactor m = Interactor {
   _userRepo :: UserRepo m,
-  _checkEmailFormat :: Monad m => CheckEmailFormat m,
-  _genUUID :: Monad m => GenUUID m,
-  _hash :: Monad m => HashText m
+  _checkEmailFormat :: CheckEmailFormat m,
+  _genUUID :: GenUUID m,
+  _hash :: HashText m
 }
 
 -- UserRepo
 data UserRepo m = UserRepo {
-  _getUserByID :: Monad m => GetUserByID m,
-  _getUserByEmail :: Monad m => GetUserByEmail m,
-  _getUserByName :: Monad m => GetUserByName m,
-  _getUserByEmailAndHashedPassword :: Monad m => GetUserByEmailAndHashedPassword m
+  _getUserByID :: GetUserByID m,
+  _getUserByEmail :: GetUserByEmail m,
+  _getUserByName :: GetUserByName m,
+  _getUserByEmailAndHashedPassword :: GetUserByEmailAndHashedPassword m
 }
 
 type GetUserByID m = Monad m => Text -> m (Maybe D.User)
