@@ -1,21 +1,20 @@
-module Adapter.Http.Router where
+module Adapter.Http.Scotty.Router where
 
-import           Adapter.Http.RegisterUser
 import           RIO
 
+
+import qualified Adapter.Http.Lib              as Lib
+
 import qualified Network.HTTP.Types            as HttpTypes
-import qualified Network.Wai                   as Wai
 import qualified Web.Scotty.Trans              as ScottyT
 
 import           Usecase.Interactor            as UC
 import qualified Usecase.LogicHandler          as UC
 
+import           Adapter.Http.Scotty.RegisterUser
 
-start
-  :: (MonadIO m, UC.Logger m)
-  => UC.LogicHandler m
-  -> (m Wai.Response -> IO Wai.Response)
-  -> IO Wai.Application
+
+start :: (MonadThrow m, MonadIO m, UC.Logger m) => Lib.Router m
 start logicHandler runner = ScottyT.scottyAppT
   runner
   (do

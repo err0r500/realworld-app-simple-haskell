@@ -9,7 +9,7 @@ import           Usecase.Interactor
 
 type State = (TVar UserRepo.Store, TVar Fake.Logs)
 
-newtype App a = App (RIO State a) deriving (Applicative, Functor, Monad, MonadReader State, MonadIO)
+newtype App a = App (RIO State a) deriving (Applicative, Functor, Monad, MonadUnliftIO, MonadReader State, MonadIO)
 
 run :: State -> App a -> IO a
 run globalState (App app) = runRIO globalState app

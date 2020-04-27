@@ -1,13 +1,13 @@
-module Http.HealthSpec where
+module Http.Specs.Health where
 
 import           RIO
 import           Test.Hspec
 import           Test.Hspec.Wai
 
-import           Http.Lib
+import qualified Http.Lib as Lib
 
-spec :: Spec
-spec =
+spec :: Lib.StartRouter -> Spec
+spec start =
   describe "health check"
     $                   with (start undefined)
     $                   it "responds with 200 without body"

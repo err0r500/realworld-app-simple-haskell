@@ -26,6 +26,9 @@ dependencies:
   - warp
   - http-types
 
+  - servant-server == 0.17
+  - mtl
+
   - uuid
   - email-validate
 

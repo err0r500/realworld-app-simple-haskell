@@ -18,6 +18,6 @@ data User =
 
 data LoginDetails =
   LoginDetails
-    { userEmail :: !Text
-    , userPassword :: !Text
+    { _loginEmail :: !Text
+    , _loginPassword :: !Text
     }

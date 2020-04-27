@@ -1,4 +1,4 @@
-module Adapter.Http.RegisterUser where
+module Adapter.Http.Scotty.RegisterUser where
 
 import           RIO
 import           RIO.Text.Lazy

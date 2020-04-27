@@ -7,7 +7,7 @@ import qualified Network.Wai.Handler.Warp      as Warp
 
 import qualified Config.Config                 as Config
 import qualified Adapter.EmailChecker          as EmailChecker
-import qualified Adapter.Http.Router           as Router
+import qualified Adapter.Http.Scotty.Router    as Router
 import qualified Adapter.InMemory.UserRepo     as UserRepo
 import qualified Adapter.Fake.Hasher           as Hasher
 import qualified Adapter.Logger                as Logger
@@ -22,16 +22,16 @@ main :: IO ()
 main = do
   putStrLn "== Haskel Clean Architecture =="
   state  <- freshState
-  router <- Router.start (logicHandler interactor) $ run state
+  router <- Router.start (logicHandler interactor) $ runApp state
   port   <- Config.getIntFromEnv "PORT" 3000
   putStrLn $ "starting server on port: " ++ show port
   Warp.run port router
 
 type State = TVar UserRepo.Store
-newtype App a = App (RIO State a) deriving (Applicative, Functor, Monad, MonadReader State, MonadIO)
+newtype App a = App (RIO State a) deriving (Applicative, Functor, Monad, MonadThrow, MonadUnliftIO, MonadReader State, MonadIO)
 
-run :: State -> App a -> IO a
-run state (App app) = runRIO state app
+runApp :: State -> App a -> IO a
+runApp state (App app) = runRIO state app
 
 interactor :: UC.Interactor App
 interactor = UC.Interactor { UC._userRepo         = userRepo
