@@ -11,6 +11,27 @@ packages:
       sha256: fb9e89b79cde3276baa484c860c6b9eeebdbc1a5c43301293351a25bc4c08e87
   original:
     hackage: hspec-wai-json-0.10.1@sha256:67b405c38f0a9e2771480c8d3ecd8aeb8d8776a35d3b2906cb1b76c9538617e4,1629
+- completed:
+    hackage: hasql-th-0.4.0.6@sha256:2b30d2aef6ab5cdea1b8be3b60f7dcf92500ebe5578d0324026dfba0c8693a0b,4398
+    pantry-tree:
+      size: 1526
+      sha256: f801323e06284f992e61fc3010d2e7da5ae9ff2a747054589f3acdf38010f459
+  original:
+    hackage: hasql-th-0.4.0.6@sha256:2b30d2aef6ab5cdea1b8be3b60f7dcf92500ebe5578d0324026dfba0c8693a0b,4398
+- completed:
+    hackage: fast-builder-0.1.2.0@sha256:d01db8a5f1ac262e2db0375c47e46660c67ad4145bef64cc7303ade096e461ee,2801
+    pantry-tree:
+      size: 1058
+      sha256: b38174b316e6609a6a45da8989470556c8450e87f60f294ed709dc50d905de67
+  original:
+    hackage: fast-builder-0.1.2.0@sha256:d01db8a5f1ac262e2db0375c47e46660c67ad4145bef64cc7303ade096e461ee,2801
+- completed:
+    hackage: headed-megaparsec-0.1.0.4@sha256:2888428f8cee84088b196639a2b5d7741d98caaeaa7a68662e54031f0dbf4655,1569
+    pantry-tree:
+      size: 383
+      sha256: 8babe7ad5e12f6569cf0bd7cac342b6f1a1669643469383e41137c61499e2120
+  original:
+    hackage: headed-megaparsec-0.1.0.4@sha256:2888428f8cee84088b196639a2b5d7741d98caaeaa7a68662e54031f0dbf4655,1569
 snapshots:
 - completed:
     size: 488576

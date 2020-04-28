@@ -3,7 +3,7 @@ module Lib where
 import           RIO
 
 import qualified Adapter.Fake.Logger           as Fake
-import qualified Adapter.InMemory.UserRepo     as UserRepo
+import qualified Adapter.Storage.InMem.User    as UserRepo
 import qualified Adapter.Logger                as Katip
 import           Usecase.Interactor
 

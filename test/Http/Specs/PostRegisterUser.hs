@@ -11,16 +11,19 @@ import qualified Usecase.LogicHandler          as UC
 
 spec :: Lib.StartRouter -> Spec
 spec start = do
+  let requestPath = "/username/example@email.com/pass"
+
   describe "happycase" $ do
-    let allGood = Lib.emptyLogicH { UC._userRegister = \_ _ -> pure $ Right "myResp" }
+    let allGood = Lib.emptyLogicH { UC._userRegister = \_ _ _ -> pure $ Right "myResp" }
     with (start allGood)
       $                   it "responds with 200 with the uuid"
-      $                   post "/username/example@email.com" ""
+      $                   post requestPath ""
       `shouldRespondWith` "myResp" { matchStatus = 200 }
 
   describe "email collision" $ do
-    let coll = Lib.emptyLogicH { UC._userRegister = \_ _ -> pure $ Left [D.ErrUserEmailAlreadyInUse] }
+    let coll =
+          Lib.emptyLogicH { UC._userRegister = \_ _ _ -> pure $ Left [D.ErrUserEmailAlreadyInUse] }
     with (start coll)
       $                   it "responds with 400"
-      $                   post "/username/example@email.com" ""
+      $                   post requestPath "" -- no indent
       `shouldRespondWith` "" { matchStatus = 400 }

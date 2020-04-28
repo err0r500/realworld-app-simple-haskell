@@ -29,6 +29,11 @@ dependencies:
   - servant-server == 0.17
   - mtl
 
+  # storage
+  - hasql == 1.4.2
+  - hasql-th >= 0.4.0.6
+
+  # various
   - uuid
   - email-validate
 

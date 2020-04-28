@@ -8,7 +8,8 @@ import qualified Network.Wai.Handler.Warp      as Warp
 import qualified Config.Config                 as Config
 import qualified Adapter.EmailChecker          as EmailChecker
 import qualified Adapter.Http.Scotty.Router    as Router
-import qualified Adapter.InMemory.UserRepo     as UserRepo
+import qualified Adapter.Storage.InMem.User    as UserRepo
+
 import qualified Adapter.Fake.Hasher           as Hasher
 import qualified Adapter.Logger                as Logger
 import qualified Adapter.UUIDGen               as UUIDGen
@@ -40,7 +41,8 @@ interactor = UC.Interactor { UC._userRepo         = userRepo
                            , UC._hash             = Hasher.hash
                            }
  where
-  userRepo = UC.UserRepo UserRepo.getUserByID
+  userRepo = UC.UserRepo UserRepo.insertUser
+                         UserRepo.getUserByID
                          UserRepo.getUserByEmail
                          UserRepo.getUserByName
                          UserRepo.getUserByEmailAndHashedPassword

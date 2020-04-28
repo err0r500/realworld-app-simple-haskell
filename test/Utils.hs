@@ -5,7 +5,7 @@ import           Test.Hspec
 
 import           Lib
 import qualified Adapter.Fake.Logger           as Logger
-import qualified Adapter.InMemory.UserRepo     as UserRepo
+import qualified Adapter.Storage.InMem.User    as UserRepo
 import qualified Adapter.Fake.UUID             as Uuid
 
 -- used for tests

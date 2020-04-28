@@ -10,10 +10,9 @@ data Error
     deriving (Show, Eq)
 
 data User =
-  User
-    { name :: !Text
-    , email :: !Text
-    , password :: !Text
+  User { _id :: !Text
+    , _name :: !Text
+    , _email :: !Text
     } deriving ( Show, Eq )
 
 data LoginDetails =

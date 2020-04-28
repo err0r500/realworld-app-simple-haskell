@@ -1,8 +1,5 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE IncoherentInstances #-}
+{-# LANGUAGE TemplateHaskell, TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances, UndecidableInstances, IncoherentInstances #-}
 
 module Adapter.Logger where
 

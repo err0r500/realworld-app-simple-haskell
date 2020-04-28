@@ -8,7 +8,7 @@ import           RIO
 import qualified Domain.User                   as D
 import qualified Usecase.Interactor            as UC
 
-type Register m = Monad m => Text -> Text -> m (Either [D.Error] Text)
+type Register m = Monad m => Text -> Text -> Text -> m (Either [D.Error] Text)
 
 register
   :: UC.Logger m
@@ -17,7 +17,7 @@ register
   -> UC.GetUserByEmail m
   -> UC.GetUserByName m
   -> Register m
-register genUUID checkEmail getUserByEmail getUserByName name email = do
+register genUUID checkEmail getUserByEmail getUserByName name email _ = do
   malformedEmailCheckResult <- checkEmail email
   collidingEmailCheckResult <- checkNoCollisionUserEmail getUserByEmail email
   collidingNameCheckResult  <- checkNoCollisionUserName getUserByName name
@@ -27,6 +27,9 @@ register genUUID checkEmail getUserByEmail getUserByName name email = do
     errs -> do
       UC.log errs
       pure $ Left errs
+
+
+
 
 combine :: [Maybe [a]] -> [a]
 combine = concatMap concat

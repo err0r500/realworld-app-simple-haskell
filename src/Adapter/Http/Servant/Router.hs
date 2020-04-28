@@ -23,7 +23,7 @@ start logicHandler runner =
 
 type API =
   Get '[JSON] NoContent
-  :<|> Capture "name" Text :> Capture "email" Text :> Post '[PlainText] Text
+  :<|> Capture "name" Text :> Capture "email" Text :> Capture "password" Text :> Post '[PlainText] Text
 
 
 server :: (MonadThrow m, MonadUnliftIO m, MonadIO m, UC.Logger m) => UC.LogicHandler m -> ServerT API m

@@ -10,9 +10,10 @@ import           Usecase.UserRegistration      as UC
 
 registerUser :: Monad m => UC.Register m -> ScottyT.ActionT LText m ()
 registerUser register = do
-  name  <- ScottyT.param "name"
-  email <- ScottyT.param "email"
-  resp  <- lift $ register name email
+  name     <- ScottyT.param "name"
+  email    <- ScottyT.param "email"
+  password <- ScottyT.param "password"
+  resp     <- lift $ register name email password
   case resp of
     Left  _    -> ScottyT.status status400
     Right uuid -> ScottyT.html $ fromStrict uuid

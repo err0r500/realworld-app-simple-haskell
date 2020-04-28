@@ -10,7 +10,7 @@ import qualified Usecase.UserRegistration      as UC
 import qualified Adapter.Logger                as Logger
 
 -- unit replaces State since we don't need any
-newtype App a = App (RIO () a) deriving (Applicative, Functor, Monad, MonadUnliftIO, MonadThrow , MonadIO)
+newtype App a = App (RIO () a) deriving (Applicative, Functor, Monad, MonadUnliftIO, MonadThrow, MonadIO)
 
 run :: App a -> IO a
 run (App app) = runRIO () app
