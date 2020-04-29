@@ -49,11 +49,11 @@ interactor = UC.Interactor { UC._userRepo         = userRepo
 
 logicHandler :: UC.Interactor App -> UC.LogicHandler App
 logicHandler i = UC.LogicHandler
-  (UC.register $ UC.RegisterFuncs (UC._genUUID i)
-                                  (UC._checkEmailFormat i)
-                                  (UC._getUserByEmail $ UC._userRepo i)
-                                  (UC._getUserByName $ UC._userRepo i)
-                                  (UC._insertUserPswd $ UC._userRepo i)
+  (UC.register (UC._genUUID i)
+               (UC._checkEmailFormat i)
+               (UC._getUserByEmail $ UC._userRepo i)
+               (UC._getUserByName $ UC._userRepo i)
+               (UC._insertUserPswd $ UC._userRepo i)
   )
   (UC.login (UC._hash i) (UC._getUserByEmailAndHashedPassword $ UC._userRepo i))
 

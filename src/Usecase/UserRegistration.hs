@@ -1,7 +1,5 @@
-{-#LANGUAGE GADTs #-}
 module Usecase.UserRegistration
   ( register
-  , RegisterFuncs(..)
   , Register
   )
 where
@@ -15,33 +13,31 @@ import qualified Usecase.Interactor            as UC
 -- the pure logic usecase signature
 type Register m = Monad m => Text -> Text -> Text -> m (Either [D.Error] Text)
 
--- the functions used by the usecase to do its job
-data RegisterFuncs m = RegisterFuncs
- ( Monad m => UC.GenUUID m )
- ( Monad m => UC.CheckEmailFormat m )
- ( Monad m => UC.GetUserByEmail m )
- ( Monad m => UC.GetUserByName m )
- ( Monad m => UC.InsertUserPswd m )
-
 -- the usecase
 register
-  :: (UC.Logger m, MonadThrow m, MonadUnliftIO m, Exception Err) => RegisterFuncs m -> Register m
-register (RegisterFuncs genUUID checkEmail getUserByEmail getUserByName insertUser) name email pswd
-  = catch
-    (do
-      malformedEmailRes <- checkEmail email
-      collidingEmailRes <- checkNoCollidingEmail getUserByEmail email
-      collidingNameRes  <- checkNoCollidingName getUserByName name
-    -- we want to accumulate the potential errors of the previous steps
-      checkValidation [malformedEmailRes, collidingEmailRes, collidingNameRes]
-      uuid <- genUUID
-      insertUser (D.User uuid name email) pswd
-      pure $ Right uuid
-    )
-    (\e -> do
-      err <- handleExceptions e
-      pure $ Left err
-    )
+  :: (UC.Logger m, MonadThrow m, MonadUnliftIO m, Exception Err)
+  => UC.GenUUID m
+  -> UC.CheckEmailFormat m
+  -> UC.GetUserByEmail m
+  -> UC.GetUserByName m
+  -> UC.InsertUserPswd m
+  -> Register m
+register genUUID checkEmail getUserByEmail getUserByName insertUserPswd name email pswd = catch
+  (do
+    malformedEmailRes <- checkEmail email
+    collidingEmailRes <- checkNoCollidingEmail getUserByEmail email
+    collidingNameRes  <- checkNoCollidingName getUserByName name
+  -- we want to accumulate the potential errors of the previous steps
+    checkValidation [malformedEmailRes, collidingEmailRes, collidingNameRes]
+    uuid <- genUUID
+    insertUser insertUserPswd (D.User uuid name email) pswd
+    pure $ Right uuid
+  )
+
+  (\e -> do
+    err <- handleExceptions e
+    pure $ Left err
+  )
 
 -- PRIVATE
 data Err = ErrValidation [D.Error]
@@ -89,4 +85,4 @@ insertUser insert user pswd = do
   res <- insert user pswd
   case res of
     Nothing -> pure ()
-    Just e  -> throwM ErrTechnical
+    Just _  -> throwM ErrTechnical
