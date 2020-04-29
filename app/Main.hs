@@ -53,6 +53,7 @@ logicHandler i = UC.LogicHandler
                                   (UC._checkEmailFormat i)
                                   (UC._getUserByEmail $ UC._userRepo i)
                                   (UC._getUserByName $ UC._userRepo i)
+                                  (UC._insertUserPswd $ UC._userRepo i)
   )
   (UC.login (UC._hash i) (UC._getUserByEmailAndHashedPassword $ UC._userRepo i))
 

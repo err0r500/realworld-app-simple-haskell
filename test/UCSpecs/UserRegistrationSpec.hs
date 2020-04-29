@@ -24,9 +24,10 @@ uc = UC.register $ UC.RegisterFuncs (UC._genUUID i)
                                     (UC._checkEmailFormat i)
                                     (UC._getUserByEmail $ UC._userRepo i)
                                     (UC._getUserByName $ UC._userRepo i)
+                                    (UC._insertUserPswd $ UC._userRepo i)
  where
   i = UC.Interactor
-    (UC.UserRepo undefined undefined InMem.getUserByEmail InMem.getUserByName undefined)
+    (UC.UserRepo InMem.insertUserPswd undefined InMem.getUserByEmail InMem.getUserByName undefined)
     MailChecker.checkEmailFormat
     (Uuid.genUUID defaultFakeUUID)
     undefined
