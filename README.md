@@ -24,3 +24,25 @@ stack run
 ```
 stack test --fast --file-watch
 ```
+
+
+## Persitence Tests
+
+The tests expect to be able to connect to a postgresql database like so :
+
+```
+hostname: postgres
+port: 5432
+user: postgres
+password: example
+db: postgres
+```
+
+To create the schema, use the file [pg.sql](./scripts/pg.sql).
+
+Example with psql :
+
+```
+PGPASSWORD=example psql -h postgres -U postgres -d postgres -f ./pg.sql
+```
+
