@@ -10,7 +10,7 @@ It aims to implement the [real world app](https://github.com/gothinkster/realwor
 Following the Port & Adapter architecture, the frameworks can be replaced with one another. To illustrate this, 2 http servers are built at the same time, passing the same test suite.
 
 - HTTP routers : [Scotty](https://hackage.haskell.org/package/scotty) & [Servant](https://hackage.haskell.org/package/servant)
-- Persistence : Tvar (business logic tests), hasql to come ;) 
+- Persistence : Tvar (business logic tests), [hasql](https://hackage.haskell.org/package/hasql) 
 - Logs : [Katip](https://hackage.haskell.org/package/katip) & Tvar (business logic tests)
 - Testing : [hspec](https://hackage.haskell.org/package/hspec)
 
