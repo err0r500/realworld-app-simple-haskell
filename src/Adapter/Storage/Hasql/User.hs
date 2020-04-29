@@ -32,37 +32,35 @@ insertUserPswd conn (D.User uid' name' email') password' = case UUID.fromText ui
         pure $ Just D.ErrUserConflict
       Right _ -> pure Nothing
 
-
 getUserByID :: (MonadIO m, UC.Logger m) => HConn.Connection -> Text -> m (Maybe D.User)
 getUserByID conn userID = case UUID.fromText userID of
   Nothing -> do
     UC.log [D.ErrorMsg (userID <> " is not a valid UUID")]
     pure Nothing
-  Just uuid -> do
-    result <- liftIO $ Session.run (Session.statement uuid selectUserByIDStmt) conn
-    handleFindUserResult result
+  Just uuid -> findUserStatementRunner (Session.statement uuid selectUserByIDStmt) conn
 
 getUserByEmail :: (MonadIO m, UC.Logger m) => HConn.Connection -> Text -> m (Maybe D.User)
-getUserByEmail conn email' = do
-  result <- liftIO $ Session.run (Session.statement email' selectUserByEmailStmt) conn
-  handleFindUserResult result
+getUserByEmail conn email' =
+  findUserStatementRunner (Session.statement email' selectUserByEmailStmt) conn
 
 getUserByName :: (MonadIO m, UC.Logger m) => HConn.Connection -> Text -> m (Maybe D.User)
-getUserByName conn name' = do
-  result <- liftIO $ Session.run (Session.statement name' selectUserByNameStmt) conn
-  handleFindUserResult result
+getUserByName conn name' =
+  findUserStatementRunner (Session.statement name' selectUserByNameStmt) conn
 
-handleFindUserResult
+findUserStatementRunner
   :: (MonadIO m, UC.Logger m)
-  => Either Session.QueryError (Maybe (UUID.UUID, Text, Text))
+  => Session.Session (Maybe (UUID.UUID, Text, Text))
+  -> HConn.Connection
   -> m (Maybe D.User)
-handleFindUserResult result = case result of
-  Right (Just (uuid, name, email)) ->
-    pure $ Just D.User { D._id = UUID.toText uuid, D._name = name, D._email = email }
-  Right Nothing -> pure Nothing
-  Left  err     -> do
-    UC.log [D.ErrorMsg err]
-    pure Nothing
+findUserStatementRunner stmt conn = do
+  result <- liftIO $ Session.run stmt conn
+  case result of
+    Right (Just (uuid, name, email)) ->
+      pure $ Just D.User { D._id = UUID.toText uuid, D._name = name, D._email = email }
+    Right Nothing -> pure Nothing
+    Left  err     -> do
+      UC.log [D.ErrorMsg err]
+      pure Nothing
 
 
 
