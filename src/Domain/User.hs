@@ -3,10 +3,14 @@ module Domain.User where
 import           RIO
 
 data Error
-    = ErrUserEmailAlreadyInUse
-      | ErrUserNameAlreadyInUse
+    = ErrEmailConflict
+      | ErrNameConflict
+      | ErrIdConflict
       | ErrMalformedEmail
       | ErrUserNotFound
+      | ErrUserConflict
+      | ErrTechnical
+      | ErrMalformed
     deriving (Show, Eq)
 
 data User =

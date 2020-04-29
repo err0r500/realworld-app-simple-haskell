@@ -41,7 +41,7 @@ interactor = UC.Interactor { UC._userRepo         = userRepo
                            , UC._hash             = Hasher.hash
                            }
  where
-  userRepo = UC.UserRepo UserRepo.insertUser
+  userRepo = UC.UserRepo UserRepo.insertUserPswd
                          UserRepo.getUserByID
                          UserRepo.getUserByEmail
                          UserRepo.getUserByName

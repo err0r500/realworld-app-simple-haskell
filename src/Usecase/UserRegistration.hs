@@ -34,16 +34,22 @@ register genUUID checkEmail getUserByEmail getUserByName name email _ = do
 combine :: [Maybe [a]] -> [a]
 combine = concatMap concat
 
-checkNoCollisionUserEmail :: Monad m => UC.GetUserByEmail m -> Text -> m (Maybe [D.Error])
+checkNoCollisionUserEmail :: UC.Logger m => UC.GetUserByEmail m -> Text -> m (Maybe [D.Error])
 checkNoCollisionUserEmail getUserByEmail email = do
   mayUser <- getUserByEmail email
   case mayUser of
-    Nothing -> pure Nothing
-    Just _  -> pure $ Just [D.ErrUserEmailAlreadyInUse]
+    Left err -> do
+      UC.log [err]
+      pure $ Just [D.ErrTechnical]
+    Right Nothing  -> pure Nothing
+    Right (Just _) -> pure $ Just [D.ErrEmailConflict]
 
-checkNoCollisionUserName :: Monad m => UC.GetUserByName m -> Text -> m (Maybe [D.Error])
+checkNoCollisionUserName :: UC.Logger m => UC.GetUserByName m -> Text -> m (Maybe [D.Error])
 checkNoCollisionUserName getUserByName name = do
   mayUser <- getUserByName name
   case mayUser of
-    Nothing -> pure Nothing
-    Just _  -> pure $ Just [D.ErrUserNameAlreadyInUse]
+    Left err -> do
+      UC.log [err]
+      pure $ Just [D.ErrTechnical]
+    Right Nothing  -> pure Nothing
+    Right (Just _) -> pure $ Just [D.ErrNameConflict]

@@ -11,5 +11,8 @@ login hash getUserByEmailAndHashedPassword loginDetails = do
   hashedPass <- hash $ _loginPassword loginDetails
   foundUser  <- getUserByEmailAndHashedPassword (_loginEmail loginDetails) hashedPass
   case foundUser of
-    Just user -> pure $ Right user
-    Nothing   -> pure $ Left D.ErrUserNotFound
+    Left err -> do
+      UC.log [err]
+      pure $ Left D.ErrTechnical
+    Right (Just user) -> pure $ Right user
+    Right Nothing     -> pure $ Left D.ErrUserNotFound

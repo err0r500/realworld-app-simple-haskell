@@ -3,7 +3,9 @@ module Adapter.Storage.InMem.User where
 import           RIO
 import qualified RIO.Map                       as Map
 import qualified Data.Has                      as DH
+
 import qualified Domain.User                   as D
+import qualified Usecase.Interactor            as UC
 
 type InMemory r m = (DH.Has (TVar Store) r, MonadReader r m, MonadIO m)
 
@@ -32,43 +34,43 @@ toDomain :: User -> D.User
 toDomain u = D.User (_id u) (_name u) (_email u)
 
 
-insertUser :: InMemory r m => Text -> Name -> Text -> Text -> m (Either D.Error ())
-insertUser uid' name' email' password' = do
+insertUserPswd :: InMemory r m => UC.InsertUserPswd m
+insertUserPswd (D.User uid' name' email') password' = do
   tvar <- asks DH.getter
   atomically $ do
     state <- readTVar tvar
     writeTVar tvar
               state { users = Map.insert uid' (User uid' name' email' password') $ users state }
-    pure $ Right ()
+    pure $ Nothing
 
 
-getUserByID :: InMemory r m => Text -> m (Maybe D.User)
+getUserByID :: InMemory r m => UC.GetUserByID m
 getUserByID userID = do
   tvar <- asks DH.getter
   atomically $ do
     state <- readTVar tvar
-    pure $ toDomain <$> Map.lookup userID (users state)
+    pure $ Right $ toDomain <$> Map.lookup userID (users state)
 
 
-getUserByEmail :: InMemory r m => Text -> m (Maybe D.User)
+getUserByEmail :: InMemory r m => UC.GetUserByEmail m
 getUserByEmail email' = commonSearch (\u -> email' == _email u)
 
 
-getUserByName :: InMemory r m => Text -> m (Maybe D.User)
+getUserByName :: InMemory r m => UC.GetUserByName m
 getUserByName name' = commonSearch (\u -> name' == _name u)
 
 
-getUserByEmailAndHashedPassword :: InMemory r m => Text -> Text -> m (Maybe D.User)
+getUserByEmailAndHashedPassword :: InMemory r m => UC.GetUserByEmailAndHashedPassword m
 getUserByEmailAndHashedPassword email' pass' =
   commonSearch (\u -> email' == _email u && pass' == _password u)
 
 
-commonSearch :: InMemory r m => (User -> Bool) -> m (Maybe D.User)
+commonSearch :: InMemory r m => (User -> Bool) -> m (Either D.Error (Maybe D.User))
 commonSearch filter_ = do
   tvar <- asks DH.getter
   atomically $ do
     state <- readTVar tvar
     case filter filter_ $ map snd $ Map.toList (users state) of
-      []      -> pure Nothing
-      (x : _) -> pure (Just (toDomain x))
+      []      -> pure $ Right Nothing
+      (x : _) -> pure $ Right (Just (toDomain x))
 

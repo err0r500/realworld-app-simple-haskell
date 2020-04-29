@@ -14,18 +14,18 @@ data Interactor m = Interactor {
 
 -- UserRepo
 data UserRepo m = UserRepo {
-  _insertUser :: InsertUser m,
+  _insertUserPswd :: InsertUserPswd m,
   _getUserByID :: GetUserByID m,
   _getUserByEmail :: GetUserByEmail m,
   _getUserByName :: GetUserByName m,
   _getUserByEmailAndHashedPassword :: GetUserByEmailAndHashedPassword m
 }
 
-type InsertUser m = Monad m => Text -> Text -> Text -> Text -> m (Either D.Error ())
-type GetUserByID m = Monad m => Text -> m (Maybe D.User)
-type GetUserByEmail m = Monad m => Text -> m (Maybe D.User)
-type GetUserByName m = Monad m => Text -> m (Maybe D.User)
-type GetUserByEmailAndHashedPassword m = Monad m => Text -> Text -> m (Maybe D.User)
+type InsertUserPswd m = Monad m => D.User -> Text -> m (Maybe D.Error)
+type GetUserByID m = Monad m => Text -> m (Either D.Error (Maybe D.User))
+type GetUserByEmail m = Monad m => Text -> m (Either D.Error (Maybe D.User))
+type GetUserByName m = Monad m => Text -> m (Either D.Error (Maybe D.User))
+type GetUserByEmailAndHashedPassword m = Monad m => Text -> Text -> m (Either D.Error (Maybe D.User))
 
 -- Mail utilies
 type CheckEmailFormat m = Monad m => Text -> m (Maybe [D.Error])

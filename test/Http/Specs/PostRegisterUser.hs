@@ -22,7 +22,7 @@ spec start = do
 
   describe "email collision" $ do
     let coll =
-          Lib.emptyLogicH { UC._userRegister = \_ _ _ -> pure $ Left [D.ErrUserEmailAlreadyInUse] }
+          Lib.emptyLogicH { UC._userRegister = \_ _ _ -> pure $ Left [D.ErrEmailConflict] }
     with (start coll)
       $                   it "responds with 400"
       $                   post requestPath "" -- no indent
