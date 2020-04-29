@@ -25,10 +25,11 @@ uc = UC.register (UC._genUUID i)
                  (UC._getUserByEmail $ UC._userRepo i)
                  (UC._getUserByName $ UC._userRepo i)
  where
-  i = UC.Interactor (UC.UserRepo undefined undefined InMem.getUserByEmail InMem.getUserByName undefined)
-                    MailChecker.checkEmailFormat
-                    (Uuid.genUUID defaultFakeUUID)
-                    undefined
+  i = UC.Interactor
+    (UC.UserRepo undefined undefined InMem.getUserByEmail InMem.getUserByName undefined)
+    MailChecker.checkEmailFormat
+    (Uuid.genUUID defaultFakeUUID)
+    undefined
 
 registerUser :: State -> UC.Register IO
 registerUser state name email password = run state $ uc name email password
@@ -66,7 +67,8 @@ spec = do
     $ it "raises UserNameAlreadyInUse & UserEmailAlreadyInUse errors"
     $ do
         state <- emptyState
-        run state $ InMem.insertUser (D._id prevUser) (D._name prevUser) (D._email prevUser) password
+        run state
+          $ InMem.insertUser (D._id prevUser) (D._name prevUser) (D._email prevUser) password
         Left resp <- registerUser state (D._name prevUser) (D._email prevUser) password
         resp `shouldMatchList` [D.ErrUserNameAlreadyInUse, D.ErrUserEmailAlreadyInUse]
         checkLogs state [D.ErrUserNameAlreadyInUse, D.ErrUserEmailAlreadyInUse]

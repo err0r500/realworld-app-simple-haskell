@@ -4,7 +4,7 @@ import           RIO
 import           Test.Hspec
 import           Test.Hspec.Wai
 
-import qualified Http.Lib as Lib
+import qualified Http.Lib                      as Lib
 
 spec :: Lib.StartRouter -> Spec
 spec start =

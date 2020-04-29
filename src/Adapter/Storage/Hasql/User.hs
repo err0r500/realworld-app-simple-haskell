@@ -16,7 +16,8 @@ import qualified Domain.User                   as D
 import qualified Domain.Messages               as D
 import qualified Usecase.Interactor            as UC
 
-insertUser :: Monad m => Connection.Connection -> Text -> Text -> Text -> Text -> m (Either D.Error ())
+insertUser
+  :: Monad m => Connection.Connection -> Text -> Text -> Text -> Text -> m (Either D.Error ())
 insertUser _ uid' name' email' password' = pure $ Right ()
 
 
@@ -28,7 +29,7 @@ getUserByID conn userID = case fromText userID of
   Just uuid -> do
     result <- liftIO $ Session.run (Session.statement uuid selectUserByID) conn
     case result of
-      Right (Just (a, b)) -> pure $ Just D.User {D._id = userID, D._name = a, D._email = b}
+      Right (Just (a, b)) -> pure $ Just D.User { D._id = userID, D._name = a, D._email = b }
       Right Nothing       -> pure Nothing
       Left  err           -> do
         UC.log [D.ErrorMsg err]

@@ -21,6 +21,7 @@ spec = do
     result `shouldBe` Just (D.User uid "matth" "matth@example.com")
   where connectionSettings = Connection.settings "postgres" 5432 "postgres" "example" "postgres"
 
+
 instance UC.Logger IO where
   log = Fake.log
 

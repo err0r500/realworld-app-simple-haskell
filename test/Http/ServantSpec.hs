@@ -10,7 +10,7 @@ import qualified Http.Specs.Health             as Health
 import qualified Http.Specs.PostRegisterUser   as PostRegisterUser
 
 start :: Lib.StartRouter
-start app = Servant.start app $ Lib.run
+start app = Servant.start app Lib.run
 
 spec :: Spec
 spec = do
