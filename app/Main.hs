@@ -16,8 +16,8 @@ import qualified Adapter.UUIDGen               as UUIDGen
 
 import qualified Usecase.Interactor            as UC
 import qualified Usecase.LogicHandler          as UC
-import qualified Usecase.UserRegistration      as UC
 import qualified Usecase.UserLogin             as UC
+import qualified Usecase.UserRegistration      as UC
 
 main :: IO ()
 main = do
@@ -49,10 +49,10 @@ interactor = UC.Interactor { UC._userRepo         = userRepo
 
 logicHandler :: UC.Interactor App -> UC.LogicHandler App
 logicHandler i = UC.LogicHandler
-  (UC.register (UC._genUUID i)
-               (UC._checkEmailFormat i)
-               (UC._getUserByEmail $ UC._userRepo i)
-               (UC._getUserByName $ UC._userRepo i)
+  (UC.register $ UC.RegisterFuncs (UC._genUUID i)
+                                  (UC._checkEmailFormat i)
+                                  (UC._getUserByEmail $ UC._userRepo i)
+                                  (UC._getUserByName $ UC._userRepo i)
   )
   (UC.login (UC._hash i) (UC._getUserByEmailAndHashedPassword $ UC._userRepo i))
 
