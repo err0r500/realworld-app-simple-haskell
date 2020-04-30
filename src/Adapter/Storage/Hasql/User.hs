@@ -19,48 +19,46 @@ import qualified Domain.Messages               as D
 import qualified Usecase.Interactor            as UC
 
 insertUserPswd :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.InsertUserPswd m
-insertUserPswd conn (D.User uid' name' email') password' = case UUID.fromText uid' of
+insertUserPswd c (D.User uid' name' email') password' = case UUID.fromText uid' of
   Nothing -> do
     UC.log [D.ErrorMsg (uid' <> " is not a valid UUID")]
     pure $ Just D.ErrMalformed
   Just uuid -> do
     result <- liftIO
-      $ Session.run (Session.statement (uuid, name', email', password') insertUserStmt) conn
+      $ Session.run (Session.statement (uuid, name', email', password') insertUserStmt) c
     case result of
       Left e -> do
         UC.log [D.ErrorMsg e]
         pure $ Just D.ErrUserConflict
       Right _ -> pure Nothing
 
-getUserByID :: (MonadIO m, UC.Logger m) => HConn.Connection -> Text -> m (Maybe D.User)
-getUserByID conn userID = case UUID.fromText userID of
+getUserByID :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByID m
+getUserByID c userID = case UUID.fromText userID of
   Nothing -> do
     UC.log [D.ErrorMsg (userID <> " is not a valid UUID")]
-    pure Nothing
-  Just uuid -> findUserStatementRunner (Session.statement uuid selectUserByIDStmt) conn
+    pure $ Right Nothing
+  Just uuid -> findUserStmtRunner (Session.statement uuid userByIDStmt) c
 
-getUserByEmail :: (MonadIO m, UC.Logger m) => HConn.Connection -> Text -> m (Maybe D.User)
-getUserByEmail conn email' =
-  findUserStatementRunner (Session.statement email' selectUserByEmailStmt) conn
+getUserByEmail :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByEmail m
+getUserByEmail c email' = findUserStmtRunner (Session.statement email' userByEmailStmt) c
 
-getUserByName :: (MonadIO m, UC.Logger m) => HConn.Connection -> Text -> m (Maybe D.User)
-getUserByName conn name' =
-  findUserStatementRunner (Session.statement name' selectUserByNameStmt) conn
+getUserByName :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByName m
+getUserByName c name' = findUserStmtRunner (Session.statement name' userByNameStmt) c
 
-findUserStatementRunner
+findUserStmtRunner
   :: (MonadIO m, UC.Logger m)
   => Session.Session (Maybe (UUID.UUID, Text, Text))
   -> HConn.Connection
-  -> m (Maybe D.User)
-findUserStatementRunner stmt conn = do
-  result <- liftIO $ Session.run stmt conn
+  -> m (Either D.Error (Maybe D.User))
+findUserStmtRunner stmt c = do
+  result <- liftIO $ Session.run stmt c
   case result of
     Right (Just (uuid, name, email)) ->
-      pure $ Just D.User { D._id = UUID.toText uuid, D._name = name, D._email = email }
-    Right Nothing -> pure Nothing
+      pure $ (Right $ Just D.User { D._id = UUID.toText uuid, D._name = name, D._email = email })
+    Right Nothing -> pure (Right Nothing)
     Left  err     -> do
       UC.log [D.ErrorMsg err]
-      pure Nothing
+      pure (Left D.ErrTechnical)
 
 
 
@@ -72,23 +70,23 @@ insertUserStmt = [TH.resultlessStatement|
                   |]
 
 
-selectUserByIDStmt :: HS.Statement UUID.UUID (Maybe (UUID.UUID, Text, Text))
-selectUserByIDStmt = [TH.maybeStatement|
+userByIDStmt :: HS.Statement UUID.UUID (Maybe (UUID.UUID, Text, Text))
+userByIDStmt = [TH.maybeStatement|
     select uid :: uuid, name :: text, email :: text
     from "users"
     where uid = $1 :: uuid
     |]
 
-selectUserByEmailStmt :: HS.Statement Text (Maybe (UUID.UUID, Text, Text))
-selectUserByEmailStmt = [TH.maybeStatement|
+userByEmailStmt :: HS.Statement Text (Maybe (UUID.UUID, Text, Text))
+userByEmailStmt = [TH.maybeStatement|
     select uid :: uuid, name :: text, email :: text
     from "users"
     where email = $1 :: text
     |]
 
 
-selectUserByNameStmt :: HS.Statement Text (Maybe (UUID.UUID, Text, Text))
-selectUserByNameStmt = [TH.maybeStatement|
+userByNameStmt :: HS.Statement Text (Maybe (UUID.UUID, Text, Text))
+userByNameStmt = [TH.maybeStatement|
     select uid :: uuid, name :: text, email :: text
     from "users"
     where name = $1 :: text
@@ -96,14 +94,14 @@ selectUserByNameStmt = [TH.maybeStatement|
 
 
 -- tests only
-truncateTable :: (MonadIO m, UC.Logger m) => HConn.Connection -> m (Either () ())
-truncateTable conn = do
-  res <- liftIO $ Session.run (Session.statement () truncateStmt) conn
+truncateTable :: (MonadIO m, UC.Logger m) => HConn.Connection -> () -> m ()
+truncateTable c _ = do
+  res <- liftIO $ Session.run (Session.statement () truncateStmt) c
   case res of
-    Right _   -> pure $ Right ()
+    Right _   -> pure ()
     Left  err -> do
       UC.log [D.ErrorMsg err]
-      pure $ Left ()
+      pure ()
 
 
 truncateStmt :: HS.Statement () ()
