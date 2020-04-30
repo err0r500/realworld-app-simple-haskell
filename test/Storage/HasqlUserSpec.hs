@@ -9,60 +9,89 @@ import qualified Hasql.Connection              as Connection
 import qualified Domain.User                   as D
 import qualified Usecase.Interactor            as UC
 import qualified Adapter.Storage.Hasql.User    as Storage
-import qualified Adapter.Fake.Logger           as Fake
-import qualified Adapter.Logger                as Logger
+import qualified Adapter.Fake.Logger           as Logger
 
-truncateAndInsert :: Connection.Settings -> D.User -> IO Connection.Connection
-truncateAndInsert connSettings user = do
-  Right conn <- Connection.acquire connSettings
-  Right () <- Storage.truncateTable conn
-  Nothing  <- Storage.insertUserPswd conn user ""
-  pure conn
+type Logs = TVar Logger.Logs
+newtype App a = App (RIO Logs a) deriving (Functor, Applicative, Monad, MonadReader Logs, MonadIO)
+
+instance MonadFail App where
+  fail = fail
+
+instance UC.Logger App where
+  log = Logger.log
+
+run :: Logs -> App a -> IO a
+run state (App app) = runRIO state app
+
+emptyState :: MonadIO m => m Logs
+emptyState = newTVarIO $ Logger.Logs []
+
+connSettings :: Connection.Settings
+connSettings = Connection.settings "postgres" 5432 "postgres" "example" "postgres"
+
+truncateAndInsert :: D.User -> IO Connection.Connection
+truncateAndInsert user = do
+  state <- emptyState
+  run state $ do
+    Right conn <- liftIO $ Connection.acquire connSettings
+    Right ()   <- Storage.truncateTable conn
+    Nothing    <- Storage.insertUserPswd conn user ""
+    pure conn
+
 
 spec :: Spec
 spec = do
-  let connSettings = Connection.settings "postgres" 5432 "postgres" "example" "postgres"
-      uid          = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
-      user         = D.User uid "matth" "matth@example.com"
-      otherUser    = D.User "61b4ea9a-cfdb-44cc-b40b-affffeedc14e" "other" "other@example.com"
+  let uid       = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+      user      = D.User uid "matth" "matth@example.com"
+      otherUser = D.User "61b4ea9a-cfdb-44cc-b40b-affffeedc14e" "other" "other@example.com"
 
   describe "find user by ID" $ it "succeeds" $ do
-    conn <- truncateAndInsert connSettings user
-    Nothing <- Storage.insertUserPswd conn otherUser ""
-    result <- Storage.getUserByID conn uid
+    state  <- emptyState
+    conn   <- truncateAndInsert user
+    result <- run state $ do
+      Nothing <- Storage.insertUserPswd conn otherUser ""
+      Storage.getUserByID conn uid
     result `shouldBe` Just user
 
   describe "find user by email" $ it "succeeds" $ do
-    conn <- truncateAndInsert connSettings user
-    Nothing <- Storage.insertUserPswd conn otherUser ""
-    result  <- Storage.getUserByEmail conn (D._email user)
+    state  <- emptyState
+    conn   <- truncateAndInsert user
+    result <- run state $ do
+      Nothing <- Storage.insertUserPswd conn otherUser ""
+      Storage.getUserByEmail conn (D._email user)
     result `shouldBe` Just user
 
   describe "find user by name" $ it "succeeds" $ do
-    conn <- truncateAndInsert connSettings user
-    Nothing <- Storage.insertUserPswd conn otherUser ""
-    result  <- Storage.getUserByName conn (D._name user)
+    state  <- emptyState
+    conn   <- truncateAndInsert user
+    result <- run state $ do
+      Nothing <- Storage.insertUserPswd conn otherUser ""
+      Storage.getUserByName conn (D._name user)
     result `shouldBe` Just user
 
 
   describe "2 different users" $ it "succeeds" $ do
-    conn <- truncateAndInsert connSettings user
-    result <- Storage.insertUserPswd conn otherUser ""
+    state  <- emptyState
+    conn   <- truncateAndInsert user
+    result <- run state $ Storage.insertUserPswd conn otherUser ""
     result `shouldBe` Nothing
 
   describe "2 users with same id" $ it "fails" $ do
-    conn <- truncateAndInsert connSettings user
-    result <- Storage.insertUserPswd conn (otherUser { D._id = uid }) ""
+    state  <- emptyState
+    conn   <- truncateAndInsert user
+    result <- run state $ Storage.insertUserPswd conn (otherUser { D._id = uid }) ""
     result `shouldBe` Just D.ErrUserConflict
 
   describe "2 users with same name" $ it "fails" $ do
-    conn <- truncateAndInsert connSettings user
-    result <- Storage.insertUserPswd conn (otherUser { D._name = D._name user }) ""
+    state  <- emptyState
+    conn   <- truncateAndInsert user
+    result <- run state $ Storage.insertUserPswd conn (otherUser { D._name = D._name user }) ""
     result `shouldBe` Just D.ErrUserConflict
 
   describe "2 users with same email" $ it "fails" $ do
-    conn <- truncateAndInsert connSettings user
-    result <- Storage.insertUserPswd conn (otherUser { D._email = D._email user }) ""
+    state  <- emptyState
+    conn   <- truncateAndInsert user
+    result <- run state $ Storage.insertUserPswd conn (otherUser { D._email = D._email user }) ""
     result `shouldBe` Just D.ErrUserConflict
 
 
@@ -78,7 +107,4 @@ isALeft e = case e of
   Right _ -> False
 
 
-
-instance UC.Logger IO where
-  log = Logger.log
 

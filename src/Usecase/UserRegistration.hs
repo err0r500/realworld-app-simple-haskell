@@ -23,6 +23,7 @@ register
   -> UC.InsertUserPswd m
   -> Register m
 register genUUID checkEmail getUserByEmail getUserByName insertUserPswd name email pswd = catch
+
   (do
     malformedEmailRes <- checkEmail email
     collidingEmailRes <- checkNoCollidingEmail getUserByEmail email

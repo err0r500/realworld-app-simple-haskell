@@ -28,7 +28,7 @@ stack test --fast --file-watch
 
 ## Persitence Tests
 
-The tests expect to be able to connect to a postgresql database like so :
+The persistence tests expect to be able to connect to a postgresql database like so :
 
 ```
 hostname: postgres
