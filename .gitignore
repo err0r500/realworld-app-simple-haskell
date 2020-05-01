@@ -1,6 +1,7 @@
 .stack-work/
 .idea/
 out/
+coverage/
 haskell-clean-architecture.cabal
 *~
 .hspec-failures

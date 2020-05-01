@@ -25,6 +25,12 @@ stack run
 stack test --fast --file-watch
 ```
 
+### Code coverage 
+
+```
+stack test --coverage
+stack hpc report . --destdir ./coverage
+```
 
 ## Persitence Tests
 
