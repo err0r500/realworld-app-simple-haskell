@@ -1,9 +1,9 @@
-module Utils where
+module Usecase.Utils where
 
 import           RIO
 import           Test.Hspec
 
-import           Lib
+import           Usecase.Lib
 import qualified Adapter.Fake.Logger           as Logger
 import qualified Adapter.Storage.InMem.User    as UserRepo
 import qualified Adapter.Fake.UUID             as Uuid

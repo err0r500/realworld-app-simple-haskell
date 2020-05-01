@@ -1,0 +1,131 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+span.lineno { color: white; background: #aaaaaa; border-right: solid white 12px }
+span.nottickedoff { background: yellow}
+span.istickedoff { background: white }
+span.tickonlyfalse { margin: -1px; border: 1px solid #f20913; background: #f20913 }
+span.tickonlytrue  { margin: -1px; border: 1px solid #60de51; background: #60de51 }
+span.funcount { font-size: small; color: orange; z-index: 2; position: absolute; right: 20 }
+span.decl { font-weight: bold }
+span.spaces    { background: white }
+</style>
+</head>
+<body>
+<pre>
+<span class="decl"><span class="nottickedoff">never executed</span> <span class="tickonlytrue">always true</span> <span class="tickonlyfalse">always false</span></span>
+</pre>
+<pre>
+<span class="lineno">    1 </span>{-# LANGUAGE TemplateHaskell #-}
+<span class="lineno">    2 </span>{-# LANGUAGE QuasiQuotes #-}
+<span class="lineno">    3 </span>
+<span class="lineno">    4 </span>module Adapter.Storage.Hasql.User where
+<span class="lineno">    5 </span>
+<span class="lineno">    6 </span>import           RIO
+<span class="lineno">    7 </span>
+<span class="lineno">    8 </span>import qualified Data.UUID                     as UUID
+<span class="lineno">    9 </span>
+<span class="lineno">   10 </span>import qualified Hasql.Statement               as HS
+<span class="lineno">   11 </span>import qualified Hasql.Encoders                as HE
+<span class="lineno">   12 </span>import qualified Hasql.Decoders                as HD
+<span class="lineno">   13 </span>import qualified Hasql.TH                      as TH
+<span class="lineno">   14 </span>import qualified Hasql.Connection              as HConn
+<span class="lineno">   15 </span>import qualified Hasql.Session                 as Session
+<span class="lineno">   16 </span>
+<span class="lineno">   17 </span>import qualified Domain.User                   as D
+<span class="lineno">   18 </span>import qualified Domain.Messages               as D
+<span class="lineno">   19 </span>import qualified Usecase.Interactor            as UC
+<span class="lineno">   20 </span>
+<span class="lineno">   21 </span>insertUserPswd :: (MonadIO m, UC.Logger m) =&gt; HConn.Connection -&gt; UC.InsertUserPswd m
+<span class="lineno">   22 </span><span class="decl"><span class="istickedoff">insertUserPswd c (D.User uid' name' email') password' = case UUID.fromText uid' of</span>
+<span class="lineno">   23 </span><span class="spaces">  </span><span class="istickedoff">Nothing -&gt; <span class="nottickedoff">do</span></span>
+<span class="lineno">   24 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">UC.log [D.ErrorMsg (uid' &lt;&gt; &quot; is not a valid UUID&quot;)]</span></span>
+<span class="lineno">   25 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">pure $ Just D.ErrMalformed</span></span>
+<span class="lineno">   26 </span><span class="spaces">  </span><span class="istickedoff">Just uuid -&gt; do</span>
+<span class="lineno">   27 </span><span class="spaces">    </span><span class="istickedoff">result &lt;- liftIO</span>
+<span class="lineno">   28 </span><span class="spaces">      </span><span class="istickedoff">$ Session.run (Session.statement (uuid, name', email', password') insertUserStmt) c</span>
+<span class="lineno">   29 </span><span class="spaces">    </span><span class="istickedoff">case result of</span>
+<span class="lineno">   30 </span><span class="spaces">      </span><span class="istickedoff">Left e -&gt; do</span>
+<span class="lineno">   31 </span><span class="spaces">        </span><span class="istickedoff">UC.log <span class="nottickedoff">[D.ErrorMsg e]</span></span>
+<span class="lineno">   32 </span><span class="spaces">        </span><span class="istickedoff">pure $ Just D.ErrUserConflict</span>
+<span class="lineno">   33 </span><span class="spaces">      </span><span class="istickedoff">Right _ -&gt; pure Nothing</span></span>
+<span class="lineno">   34 </span>
+<span class="lineno">   35 </span>getUserByID :: (MonadIO m, UC.Logger m) =&gt; HConn.Connection -&gt; UC.GetUserByID m
+<span class="lineno">   36 </span><span class="decl"><span class="istickedoff">getUserByID c userID = case UUID.fromText userID of</span>
+<span class="lineno">   37 </span><span class="spaces">  </span><span class="istickedoff">Nothing -&gt; <span class="nottickedoff">do</span></span>
+<span class="lineno">   38 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">UC.log [D.ErrorMsg (userID &lt;&gt; &quot; is not a valid UUID&quot;)]</span></span>
+<span class="lineno">   39 </span><span class="spaces">    </span><span class="istickedoff"><span class="nottickedoff">pure $ Right Nothing</span></span>
+<span class="lineno">   40 </span><span class="spaces">  </span><span class="istickedoff">Just uuid -&gt; findUserStmtRunner (Session.statement uuid userByIDStmt) c</span></span>
+<span class="lineno">   41 </span>
+<span class="lineno">   42 </span>getUserByEmail :: (MonadIO m, UC.Logger m) =&gt; HConn.Connection -&gt; UC.GetUserByEmail m
+<span class="lineno">   43 </span><span class="decl"><span class="istickedoff">getUserByEmail c email' = findUserStmtRunner (Session.statement email' userByEmailStmt) c</span></span>
+<span class="lineno">   44 </span>
+<span class="lineno">   45 </span>getUserByName :: (MonadIO m, UC.Logger m) =&gt; HConn.Connection -&gt; UC.GetUserByName m
+<span class="lineno">   46 </span><span class="decl"><span class="istickedoff">getUserByName c name' = findUserStmtRunner (Session.statement name' userByNameStmt) c</span></span>
+<span class="lineno">   47 </span>
+<span class="lineno">   48 </span>findUserStmtRunner
+<span class="lineno">   49 </span>  :: (MonadIO m, UC.Logger m)
+<span class="lineno">   50 </span>  =&gt; Session.Session (Maybe (UUID.UUID, Text, Text))
+<span class="lineno">   51 </span>  -&gt; HConn.Connection
+<span class="lineno">   52 </span>  -&gt; m (Either D.Error (Maybe D.User))
+<span class="lineno">   53 </span><span class="decl"><span class="istickedoff">findUserStmtRunner stmt c = do</span>
+<span class="lineno">   54 </span><span class="spaces">  </span><span class="istickedoff">result &lt;- liftIO $ Session.run stmt c</span>
+<span class="lineno">   55 </span><span class="spaces">  </span><span class="istickedoff">case result of</span>
+<span class="lineno">   56 </span><span class="spaces">    </span><span class="istickedoff">Right (Just (uuid, name, email)) -&gt;</span>
+<span class="lineno">   57 </span><span class="spaces">      </span><span class="istickedoff">pure $ (Right $ Just D.User { D._id = UUID.toText uuid, D._name = name, D._email = email })</span>
+<span class="lineno">   58 </span><span class="spaces">    </span><span class="istickedoff">Right Nothing -&gt; <span class="nottickedoff">pure (Right Nothing)</span></span>
+<span class="lineno">   59 </span><span class="spaces">    </span><span class="istickedoff">Left  err     -&gt; <span class="nottickedoff">do</span></span>
+<span class="lineno">   60 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">UC.log [D.ErrorMsg err]</span></span>
+<span class="lineno">   61 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">pure (Left D.ErrTechnical)</span></span></span>
+<span class="lineno">   62 </span>
+<span class="lineno">   63 </span>
+<span class="lineno">   64 </span>
+<span class="lineno">   65 </span>-- statements
+<span class="lineno">   66 </span>insertUserStmt :: HS.Statement (UUID.UUID, Text, Text, Text) ()
+<span class="lineno">   67 </span><span class="decl"><span class="istickedoff">insertUserStmt = [TH.resultlessStatement|</span>
+<span class="lineno">   68 </span><span class="spaces">                  </span><span class="istickedoff">insert into &quot;users&quot; (uid, name, email, password)</span>
+<span class="lineno">   69 </span><span class="spaces">                  </span><span class="istickedoff">values ($1::uuid, $2::text, $3::text, $4::text)</span>
+<span class="lineno">   70 </span><span class="spaces">                  </span><span class="istickedoff">|]</span></span>
+<span class="lineno">   71 </span>
+<span class="lineno">   72 </span>
+<span class="lineno">   73 </span>userByIDStmt :: HS.Statement UUID.UUID (Maybe (UUID.UUID, Text, Text))
+<span class="lineno">   74 </span><span class="decl"><span class="istickedoff">userByIDStmt = [TH.maybeStatement|</span>
+<span class="lineno">   75 </span><span class="spaces">    </span><span class="istickedoff">select uid :: uuid, name :: text, email :: text</span>
+<span class="lineno">   76 </span><span class="spaces">    </span><span class="istickedoff">from &quot;users&quot;</span>
+<span class="lineno">   77 </span><span class="spaces">    </span><span class="istickedoff">where uid = $1 :: uuid</span>
+<span class="lineno">   78 </span><span class="spaces">    </span><span class="istickedoff">|]</span></span>
+<span class="lineno">   79 </span>
+<span class="lineno">   80 </span>userByEmailStmt :: HS.Statement Text (Maybe (UUID.UUID, Text, Text))
+<span class="lineno">   81 </span><span class="decl"><span class="istickedoff">userByEmailStmt = [TH.maybeStatement|</span>
+<span class="lineno">   82 </span><span class="spaces">    </span><span class="istickedoff">select uid :: uuid, name :: text, email :: text</span>
+<span class="lineno">   83 </span><span class="spaces">    </span><span class="istickedoff">from &quot;users&quot;</span>
+<span class="lineno">   84 </span><span class="spaces">    </span><span class="istickedoff">where email = $1 :: text</span>
+<span class="lineno">   85 </span><span class="spaces">    </span><span class="istickedoff">|]</span></span>
+<span class="lineno">   86 </span>
+<span class="lineno">   87 </span>
+<span class="lineno">   88 </span>userByNameStmt :: HS.Statement Text (Maybe (UUID.UUID, Text, Text))
+<span class="lineno">   89 </span><span class="decl"><span class="istickedoff">userByNameStmt = [TH.maybeStatement|</span>
+<span class="lineno">   90 </span><span class="spaces">    </span><span class="istickedoff">select uid :: uuid, name :: text, email :: text</span>
+<span class="lineno">   91 </span><span class="spaces">    </span><span class="istickedoff">from &quot;users&quot;</span>
+<span class="lineno">   92 </span><span class="spaces">    </span><span class="istickedoff">where name = $1 :: text</span>
+<span class="lineno">   93 </span><span class="spaces">    </span><span class="istickedoff">|]</span></span>
+<span class="lineno">   94 </span>
+<span class="lineno">   95 </span>
+<span class="lineno">   96 </span>-- tests only
+<span class="lineno">   97 </span>truncateTable :: (MonadIO m, UC.Logger m) =&gt; HConn.Connection -&gt; () -&gt; m ()
+<span class="lineno">   98 </span><span class="decl"><span class="istickedoff">truncateTable c _ = do</span>
+<span class="lineno">   99 </span><span class="spaces">  </span><span class="istickedoff">res &lt;- liftIO $ Session.run (Session.statement <span class="nottickedoff">()</span> truncateStmt) c</span>
+<span class="lineno">  100 </span><span class="spaces">  </span><span class="istickedoff">case res of</span>
+<span class="lineno">  101 </span><span class="spaces">    </span><span class="istickedoff">Right _   -&gt; pure <span class="nottickedoff">()</span></span>
+<span class="lineno">  102 </span><span class="spaces">    </span><span class="istickedoff">Left  err -&gt; <span class="nottickedoff">do</span></span>
+<span class="lineno">  103 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">UC.log [D.ErrorMsg err]</span></span>
+<span class="lineno">  104 </span><span class="spaces">      </span><span class="istickedoff"><span class="nottickedoff">pure ()</span></span></span>
+<span class="lineno">  105 </span>
+<span class="lineno">  106 </span>
+<span class="lineno">  107 </span>truncateStmt :: HS.Statement () ()
+<span class="lineno">  108 </span><span class="decl"><span class="istickedoff">truncateStmt = HS.Statement &quot;truncate table users&quot; HE.noParams HD.noResult True</span></span>
+
+</pre>
+</body>
+</html>

@@ -1,4 +1,4 @@
-module UCSpecs.UserLoginSpec
+module Usecase.Specs.UserLoginSpec
   ( spec
   )
 where
@@ -7,8 +7,8 @@ import           RIO
 
 import           Test.Hspec
 
-import           Lib
-import           Utils
+import           Usecase.Lib
+import           Usecase.Utils
 
 import qualified Adapter.Storage.InMem.User    as UserRepo
 import qualified Domain.User                   as D

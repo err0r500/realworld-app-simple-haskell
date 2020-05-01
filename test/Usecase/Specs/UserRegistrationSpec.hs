@@ -1,4 +1,4 @@
-module UCSpecs.UserRegistrationSpec
+module Usecase.Specs.UserRegistrationSpec
   ( spec
   )
 where
@@ -7,8 +7,8 @@ import           RIO
 
 import           Test.Hspec
 
-import           Lib
-import           Utils
+import           Usecase.Lib
+import           Usecase.Utils
 
 import qualified Adapter.EmailChecker          as MailChecker
 import qualified Adapter.Fake.Logger           as Logger

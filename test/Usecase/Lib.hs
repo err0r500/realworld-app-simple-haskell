@@ -1,4 +1,4 @@
-module Lib where
+module Usecase.Lib where
 
 import           RIO
 
