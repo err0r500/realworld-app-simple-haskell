@@ -7,7 +7,7 @@ import qualified Network.Wai.Handler.Warp      as Warp
 
 import qualified Config.Config                 as Config
 import qualified Adapter.EmailChecker          as EmailChecker
-import qualified Adapter.Http.Scotty.Router    as Router
+import qualified Adapter.Http.Servant.Router    as Router
 import qualified Adapter.Storage.InMem.User    as UserRepo
 
 import qualified Adapter.Fake.Hasher           as Hasher
@@ -23,7 +23,7 @@ main :: IO ()
 main = do
   putStrLn "== Haskel Clean Architecture =="
   state  <- freshState
-  router <- Router.start (logicHandler interactor) $ runApp state
+  router <- liftIO $ Router.start (logicHandler interactor) $ runApp state
   port   <- Config.getIntFromEnv "PORT" 3000
   putStrLn $ "starting server on port: " ++ show port
   Warp.run port router
