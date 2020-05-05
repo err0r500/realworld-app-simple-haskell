@@ -13,6 +13,7 @@ data Error
       | ErrMalformed
     deriving (Show, Eq)
 
+-- TODO : change _id to UUID.UUID
 data User =
   User { _id :: !Text
     , _name :: !Text
@@ -24,7 +25,3 @@ data LoginDetails =
     { _loginEmail :: !Text
     , _loginPassword :: !Text
     }
-
-
-data ErrMalformed'
-data ErrIdConflict'

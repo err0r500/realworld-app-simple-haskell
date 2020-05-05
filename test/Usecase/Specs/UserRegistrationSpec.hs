@@ -51,17 +51,23 @@ spec = do
   describe "collision with other user email" $ it "raises an UserEmailAlreadyInUse error" $ do
     state <- emptyState
     run state $ InMem.insertUserPswd prevUser password
-    Left resp <- registerUser state (D._name currUser) (D._email prevUser) password
-    resp `shouldBe` [D.ErrEmailConflict]
-    checkLogs state [D.ErrEmailConflict]
+    Left (UC.ErrValidation resp) <- registerUser state
+                                                 (D._name currUser)
+                                                 (D._email prevUser)
+                                                 password
+    resp `shouldBe` [UC.EmailConflict]
+    checkLogs state [UC.EmailConflict]
 
 
   describe "collision with other user name" $ it "raises an UserNameAlreadyInUse error" $ do
     state <- emptyState
     run state $ InMem.insertUserPswd prevUser password
-    Left resp <- registerUser state (D._name prevUser) (D._email currUser) password
-    resp `shouldBe` [D.ErrNameConflict]
-    checkLogs state [D.ErrNameConflict]
+    Left (UC.ErrValidation resp) <- registerUser state
+                                                 (D._name prevUser)
+                                                 (D._email currUser)
+                                                 password
+    resp `shouldBe` [UC.NameConflict]
+    checkLogs state [UC.NameConflict]
 
 
   describe "collision with other user name & other user email"
@@ -69,13 +75,16 @@ spec = do
     $ do
         state <- emptyState
         run state $ InMem.insertUserPswd prevUser password
-        Left resp <- registerUser state (D._name prevUser) (D._email prevUser) password
-        resp `shouldMatchList` [D.ErrNameConflict, D.ErrEmailConflict]
-        checkLogs state [D.ErrNameConflict, D.ErrEmailConflict]
+        Left (UC.ErrValidation resp) <- registerUser state
+                                                     (D._name prevUser)
+                                                     (D._email prevUser)
+                                                     password
+        resp `shouldMatchList` [UC.NameConflict, UC.EmailConflict]
+        checkLogs state [UC.NameConflict, UC.EmailConflict]
 
 
   describe "malformed email" $ it "raises an MalformedEmail error" $ do
-    state     <- emptyState
-    Left resp <- registerUser state (D._name currUser) malformedEmail password
-    resp `shouldMatchList` [D.ErrMalformedEmail]
-    checkLogs state [D.ErrMalformedEmail]
+    state                        <- emptyState
+    Left (UC.ErrValidation resp) <- registerUser state (D._name currUser) malformedEmail password
+    resp `shouldMatchList` [UC.MalformedEmail]
+    checkLogs state [UC.MalformedEmail]

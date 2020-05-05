@@ -4,8 +4,9 @@ import           RIO
 import qualified Domain.User                   as D
 import qualified Usecase.Interactor            as UC
 
+data Err = ErrTech | UserNotFound deriving (Show, Eq)
 
-type Login m = Monad m => D.LoginDetails -> m (Either D.Error D.User)
+type Login m = Monad m => D.LoginDetails -> m (Either Err D.User)
 
 login :: UC.Logger m => UC.HashText m -> UC.GetUserByEmailAndHashedPassword m -> Login m
 login hash getUserByEmailAndHashedPassword loginDetails = do
@@ -14,6 +15,6 @@ login hash getUserByEmailAndHashedPassword loginDetails = do
   case foundUser of
     Left err -> do
       UC.log [err]
-      pure $ Left D.ErrTechnical
+      pure $ Left ErrTech
     Right (Just user) -> pure $ Right user
-    Right Nothing     -> pure $ Left D.ErrUserNotFound
+    Right Nothing     -> pure $ Left UserNotFound

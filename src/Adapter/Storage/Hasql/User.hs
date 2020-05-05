@@ -22,14 +22,14 @@ insertUserPswd :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.InsertUserP
 insertUserPswd c (D.User uid' name' email') password' = case UUID.fromText uid' of
   Nothing -> do
     UC.log [D.ErrorMsg (uid' <> " is not a valid UUID")]
-    pure $ Just D.ErrMalformed
+    pure $ Just (UC.SpecificErr UC.InsertUserConflict) -- TODO fixme, should be removed
   Just uuid -> do
     result <- liftIO
       $ Session.run (Session.statement (uuid, name', email', password') insertUserStmt) c
     case result of
       Left e -> do
-        UC.log [D.ErrorMsg e]
-        pure $ Just D.ErrUserConflict
+        UC.log [D.ErrorMsg e] -- TODO : actually handle conflict
+        pure $ Just (UC.SpecificErr UC.InsertUserConflict)
       Right _ -> pure Nothing
 
 getUserByID :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByID m
@@ -54,7 +54,7 @@ findUserStmtRunner stmt c = do
   result <- liftIO $ Session.run stmt c
   case result of
     Right (Just (uuid, name, email)) ->
-      pure $ (Right $ Just D.User { D._id = UUID.toText uuid, D._name = name, D._email = email })
+      pure (Right $ Just D.User { D._id = UUID.toText uuid, D._name = name, D._email = email })
     Right Nothing -> pure (Right Nothing)
     Left  err     -> do
       UC.log [D.ErrorMsg err]

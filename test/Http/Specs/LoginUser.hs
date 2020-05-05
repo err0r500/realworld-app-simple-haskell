@@ -10,6 +10,8 @@ import           Test.Hspec.Wai.JSON
 import qualified Http.Lib                      as Lib
 import qualified Http.Utils                    as Utils
 import qualified Usecase.LogicHandler          as UC
+import qualified Usecase.UserLogin             as UC
+                                                ( Err(..) )
 import qualified Domain.User                   as D
 
 spec :: Lib.StartRouter -> Spec
@@ -42,7 +44,7 @@ spec start = do
       `shouldRespondWith` respBody { matchStatus = 200 }
 
   describe "email collision" $ do
-    let coll = Lib.emptyLogicH { UC._userLogin = \_ -> pure $ Left D.ErrUserNotFound }
+    let coll = Lib.emptyLogicH { UC._userLogin = \_ -> pure $ Left UC.UserNotFound }
     with (start coll)
       $                   it "responds with 404"
       $                   Utils.postSimpleJSON reqPath reqBody

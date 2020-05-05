@@ -60,7 +60,7 @@ spec r reset = do
       reset ()
       Nothing <- UC._insertUserPswd r user ""
       UC._insertUserPswd r (otherUser { D._id = uid }) ""
-    result `shouldBe` Just D.ErrUserConflict
+    result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)
 
   describe "2 users with same name" $ it "fails" $ do
     logs   <- Lib.emptyLogs
@@ -68,7 +68,7 @@ spec r reset = do
       reset ()
       Nothing <- UC._insertUserPswd r user ""
       UC._insertUserPswd r (otherUser { D._name = D._name user }) ""
-    result `shouldBe` Just D.ErrUserConflict
+    result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)
 
   describe "2 users with same email" $ it "fails" $ do
     logs   <- Lib.emptyLogs
@@ -76,4 +76,4 @@ spec r reset = do
       reset ()
       Nothing <- UC._insertUserPswd r user ""
       UC._insertUserPswd r (otherUser { D._email = D._email user }) ""
-    result `shouldBe` Just D.ErrUserConflict
+    result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)

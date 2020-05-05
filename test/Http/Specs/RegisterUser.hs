@@ -10,6 +10,7 @@ import           Test.Hspec.Wai.JSON
 import qualified Http.Lib                      as Lib
 import qualified Http.Utils                    as Utils
 import qualified Usecase.LogicHandler          as UC
+import qualified Usecase.UserRegistration      as UC
 import qualified Domain.User                   as D
 
 spec :: Lib.StartRouter -> Spec
@@ -34,10 +35,10 @@ spec start = do
       `shouldRespondWith` "myResp" { matchStatus = 200 }
 
   describe "email collision" $ do
-    let coll = Lib.emptyLogicH { UC._userRegister = \_ _ _ -> pure $ Left [D.ErrEmailConflict] }
+    let coll = Lib.emptyLogicH { UC._userRegister = \_ _ _ -> pure $ Left (UC.ErrValidation []) }
     with (start coll)
-      $                   it "responds with 400"
+      $                   it "responds with 422"
       $                   Utils.postSimpleJSON reqPath reqBody
-      `shouldRespondWith` "" { matchStatus = 400 }
+      `shouldRespondWith` "" { matchStatus = 422 }
 
 

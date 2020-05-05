@@ -21,14 +21,20 @@ data UserRepo m = UserRepo {
   _getUserByEmailAndHashedPassword :: GetUserByEmailAndHashedPassword m
 }
 
-type InsertUserPswd m = Monad m => D.User -> Text -> m (Maybe D.Error)
+data Err a = AnyErr -- if it's a tech error we don't want more details at this level, it has to be handled "below", won't be logged here neither
+  | SpecificErr a  -- usecase want to know about theses errors when they happen
+  deriving (Show, Eq)
+
+data ErrInsertUser = InsertUserConflict deriving (Show, Eq)
+type InsertUserPswd m = Monad m => D.User -> Text -> m (Maybe (Err ErrInsertUser)) -- TODO: use Either Err ()
 type GetUserByID m = Monad m => Text -> m (Either D.Error (Maybe D.User))
 type GetUserByEmail m = Monad m => Text -> m (Either D.Error (Maybe D.User))
 type GetUserByName m = Monad m => Text -> m (Either D.Error (Maybe D.User))
-type GetUserByEmailAndHashedPassword m = Monad m => Text -> Text -> m (Either D.Error (Maybe D.User))
+type GetUserByEmailAndHashedPassword m
+  = Monad m => Text -> Text -> m (Either D.Error (Maybe D.User))
 
 -- Mail utilies
-type CheckEmailFormat m = Monad m => Text -> m (Maybe [D.Error])
+type CheckEmailFormat m = Monad m => Text -> m (Maybe ())
 
 -- UUID generation
 type GenUUID m = Monad m => m Text

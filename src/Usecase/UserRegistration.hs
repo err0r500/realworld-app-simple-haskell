@@ -1,6 +1,8 @@
 module Usecase.UserRegistration
   ( register
   , Register
+  , Err(..)
+  , ValidationErr(..)
   )
 where
 
@@ -8,10 +10,24 @@ import           RIO
 import qualified Domain.User                   as D
 import qualified Usecase.Interactor            as UC
 
+-- log business errors (example : get user return nothing is not an error at storage level but must be handled)
 
 -- PUBLIC
 -- the pure logic usecase signature
-type Register m = Monad m => Text -> Text -> Text -> m (Either [D.Error] Text)
+type Register m = Monad m => Text -> Text -> Text -> m (Either Err Text)
+
+-- the errors that may be returned by the usecase
+data Err = ErrTechnical
+  | ErrValidation [ValidationErr]
+    deriving (Show, Eq)
+instance Exception Err
+
+-- specific validation errors
+data ValidationErr = EmailConflict
+  | NameConflict
+  | IdConflict
+  | MalformedEmail
+     deriving (Show, Eq)
 
 -- the usecase
 register
@@ -22,10 +38,10 @@ register
   -> UC.GetUserByName m
   -> UC.InsertUserPswd m
   -> Register m
-register genUUID checkEmail getUserByEmail getUserByName insertUserPswd name email pswd = catch
+register genUUID checkEmailFn getUserByEmail getUserByName insertUserPswd name email pswd = catch
 
   (do
-    malformedEmailRes <- checkEmail email
+    malformedEmailRes <- checkEmail <$> checkEmailFn email
     collidingEmailRes <- checkNoCollidingEmail getUserByEmail email
     collidingNameRes  <- checkNoCollidingName getUserByName name
   -- we want to accumulate the potential errors of the previous steps
@@ -35,51 +51,48 @@ register genUUID checkEmail getUserByEmail getUserByName insertUserPswd name ema
     pure $ Right uuid
   )
 
-  (\e -> do
-    err <- handleExceptions e
+  (\errs -> do
+    err <- handleExceptions errs
     pure $ Left err
   )
 
 -- PRIVATE
-data Err = ErrValidation [D.Error]
-  | ErrTechnical
-    deriving (Show, Eq)
-instance Exception Err
-
-handleExceptions :: (UC.Logger m, MonadUnliftIO m, Exception Err) => Err -> m [D.Error]
-handleExceptions e = case e of
+handleExceptions :: (UC.Logger m, MonadUnliftIO m, Exception Err) => Err -> m Err
+handleExceptions errs = case errs of
   ErrTechnical -> do
-    UC.log [e]
-    pure [D.ErrTechnical]
-  ErrValidation errs -> do
-    UC.log errs
-    pure errs
+    UC.log [errs]
+    pure ErrTechnical
+  ErrValidation mayVE -> do
+    UC.log mayVE
+    pure $ ErrValidation mayVE
+
+
+checkEmail :: Maybe () -> Maybe ValidationErr
+checkEmail Nothing  = Nothing
+checkEmail (Just _) = Just MalformedEmail
 
 checkNoCollidingEmail
-  :: (MonadThrow m, Exception Err) => UC.GetUserByEmail m -> Text -> m (Maybe [D.Error])
+  :: (MonadThrow m, Exception Err) => UC.GetUserByEmail m -> Text -> m (Maybe ValidationErr)
 checkNoCollidingEmail getUserByEmail email = do
   mayUser <- getUserByEmail email
   case mayUser of
     Left  _        -> throwM ErrTechnical
     Right Nothing  -> pure Nothing
-    Right (Just _) -> pure $ Just [D.ErrEmailConflict]
+    Right (Just _) -> pure $ Just EmailConflict
 
 checkNoCollidingName
-  :: (MonadThrow m, Exception Err) => UC.GetUserByName m -> Text -> m (Maybe [D.Error])
+  :: (MonadThrow m, Exception Err) => UC.GetUserByName m -> Text -> m (Maybe ValidationErr)
 checkNoCollidingName getUserByName name = do
   mayUser <- getUserByName name
   case mayUser of
     Left  _        -> throwM ErrTechnical
     Right Nothing  -> pure Nothing
-    Right (Just _) -> pure $ Just [D.ErrNameConflict]
+    Right (Just _) -> pure $ Just NameConflict
 
-checkValidation :: (MonadThrow m, Exception Err) => [Maybe [D.Error]] -> m ()
-checkValidation errs = case combine errs of
-  [] -> pure ()
-  e  -> throwM (ErrValidation e)
-
-combine :: [Maybe [a]] -> [a]
-combine = concatMap concat
+checkValidation :: (MonadThrow m, Exception Err) => [Maybe ValidationErr] -> m ()
+checkValidation mayVE = case catMaybes mayVE of
+  []   -> pure ()
+  errs -> throwM (ErrValidation errs)
 
 insertUser :: (MonadThrow m, Exception Err) => UC.InsertUserPswd m -> D.User -> Text -> m ()
 insertUser insert user pswd = do

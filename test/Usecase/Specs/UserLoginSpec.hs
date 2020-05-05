@@ -40,9 +40,9 @@ spec = do
   describe "not found" $ it "returns a ErrUserNotFound" $ do
     state        <- insertUserPswd_ myUser userPassword
     notFoundUser <- loginUser state $ D.LoginDetails (userEmail <> "oops") userPassword
-    notFoundUser `shouldBe` Left D.ErrUserNotFound
+    notFoundUser `shouldBe` Left UC.UserNotFound -- D.ErrUserNotFound
 
   describe "not found 2" $ it "returns a ErrUserNotFound" $ do
     state        <- insertUserPswd_ myUser userPassword
     notFoundUser <- loginUser state $ D.LoginDetails userEmail (userPassword <> "oops")
-    notFoundUser `shouldBe` Left D.ErrUserNotFound
+    notFoundUser `shouldBe` Left UC.UserNotFound --D.ErrUserNotFound
