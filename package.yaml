@@ -78,4 +78,3 @@ tests:
       - hspec
       - hspec-wai
       - hspec-wai-json
-      - interpolatedstring-perl6 == 1.0.2

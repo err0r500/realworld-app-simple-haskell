@@ -1,11 +1,11 @@
 {-# LANGUAGE QuasiQuotes #-}
 
-module Http.Specs.PostRegisterUser where
+module Http.Specs.RegisterUser where
 
 import           RIO
 import           Test.Hspec
 import           Test.Hspec.Wai
-import           Text.InterpolatedString.Perl6  ( q )
+import           Test.Hspec.Wai.JSON
 
 import qualified Http.Lib                      as Lib
 import qualified Http.Utils                    as Utils
@@ -15,11 +15,13 @@ import qualified Domain.User                   as D
 spec :: Lib.StartRouter -> Spec
 spec start = do
   let reqPath = "/api/users"
-      reqBody = [q|
-                      {"user": {
-                        "username": "matth",
-                        "email": "matth@example.com",
-                        "password": "mypassword" }
+      reqBody = [json|
+                      {
+                        "user": {
+                          "username": "matth",
+                          "email": "matth@example.com",
+                          "password": "mypassword"
+                        }
                       }
                      |]
 

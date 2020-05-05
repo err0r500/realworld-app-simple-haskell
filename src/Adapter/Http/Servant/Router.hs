@@ -14,6 +14,7 @@ import qualified Usecase.Interactor            as UC
 import qualified Usecase.LogicHandler          as UC
 
 import qualified Adapter.Http.Servant.RegisterUser as Handler
+import qualified Adapter.Http.Servant.LoginUser as Handler
 
 
 
@@ -25,15 +26,17 @@ start logicHandler runner =
 
 
 type API =
-  Get '[JSON] NoContent
-  :<|> "api" :> "users" :> ReqBody '[JSON] (Lib.User Lib.RegisterDetails) :> Post '[PlainText] Text
+  Get '[JSON] NoContent -- health check
+  :<|> "api" :> "users" :> ReqBody '[JSON] (Lib.User Lib.RegisterDetails) :> Post '[PlainText] Text -- register new user
+  :<|> "api" :> "users" :> "login" :> ReqBody '[JSON] (Lib.User Lib.LoginDetails) :> Post '[JSON] ( Lib.User Lib.UserDetails ) -- user login
 
 
 server :: (MonadThrow m, MonadUnliftIO m, MonadIO m, UC.Logger m) => UC.LogicHandler m -> ServerT API m
-server  logicHandler = healthH :<|> regUser
+server  logicHandler = healthH :<|> regUser :<|> loginUser
   where
     healthH = pure NoContent
     regUser (Lib.User body) = Handler.registerUser (UC._userRegister logicHandler) body
+    loginUser (Lib.User body) = Handler.loginUser (UC._userLogin logicHandler) body
 
 
 -- liftIO is not enough to catch the "throwM"s in handlers so we rebuild the handler manually

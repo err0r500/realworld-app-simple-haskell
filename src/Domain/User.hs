@@ -24,3 +24,7 @@ data LoginDetails =
     { _loginEmail :: !Text
     , _loginPassword :: !Text
     }
+
+
+data ErrMalformed'
+data ErrIdConflict'
