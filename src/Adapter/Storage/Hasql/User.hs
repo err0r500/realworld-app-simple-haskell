@@ -3,7 +3,7 @@
 
 module Adapter.Storage.Hasql.User where
 
-import           RIO
+import           RIO                     hiding ( trace )
 
 import qualified Data.UUID                     as UUID
 
@@ -13,20 +13,31 @@ import qualified Hasql.Decoders                as HD
 import qualified Hasql.TH                      as TH
 import qualified Hasql.Connection              as HConn
 import qualified Hasql.Session                 as Session
+import qualified PostgreSQL.ErrorCodes         as PgErr
+                                                ( unique_violation )
 
 import qualified Domain.User                   as D
 import qualified Domain.Messages               as D
 import qualified Usecase.Interactor            as UC
+
 
 insertUserPswd :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.InsertUserPswd m
 insertUserPswd c (D.User uid' name' email') password' = do
   result <- liftIO
     $ Session.run (Session.statement (uid', name', email', password') insertUserStmt) c
   case result of
-    Left e -> do
-      UC.log [D.ErrorMsg e] -- TODO : actually handle conflict
-      pure $ Just (UC.SpecificErr UC.InsertUserConflict)
-    Right _ -> pure Nothing
+    Left (Session.QueryError _ _ (Session.ResultError (Session.ServerError code err _ _))) ->
+      if code == PgErr.unique_violation
+        then do
+          UC.log [D.ErrorMsg err]
+          pure $ Just (UC.SpecificErr UC.InsertUserConflict)
+        else stdErrHandling err
+    Left  err -> stdErrHandling err
+    Right _   -> pure Nothing
+ where
+  stdErrHandling err = do
+    UC.log [D.ErrorMsg err]
+    pure $ Just UC.AnyErr
 
 getUserByID :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByID m
 getUserByID c id' = findUserStmtRunner (Session.statement id' userByIDStmt) c

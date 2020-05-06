@@ -32,6 +32,13 @@ packages:
       sha256: 8babe7ad5e12f6569cf0bd7cac342b6f1a1669643469383e41137c61499e2120
   original:
     hackage: headed-megaparsec-0.1.0.4@sha256:2888428f8cee84088b196639a2b5d7741d98caaeaa7a68662e54031f0dbf4655,1569
+- completed:
+    hackage: postgresql-error-codes-1.0.1@sha256:34ce40401dc21762996dadd38336436f40a09da95ad3309ba6dc506d707cff11,1413
+    pantry-tree:
+      size: 240
+      sha256: 2b8d529e883ae9ff4c1c98b05410edd6343b0ea2ec016bae256ff7d7ede3fc46
+  original:
+    hackage: postgresql-error-codes-1.0.1@sha256:34ce40401dc21762996dadd38336436f40a09da95ad3309ba6dc506d707cff11,1413
 snapshots:
 - completed:
     size: 488576

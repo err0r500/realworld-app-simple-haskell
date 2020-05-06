@@ -34,6 +34,7 @@ dependencies:
   # storage
   - hasql == 1.4.2
   - hasql-th >= 0.4.0.6
+  - postgresql-error-codes
 
   # various
   - uuid

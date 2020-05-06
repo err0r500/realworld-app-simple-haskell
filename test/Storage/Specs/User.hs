@@ -49,6 +49,23 @@ spec r reset = do
 
 
   -- Insert User
+
+-- this test is dependant of a schema detail...
+  describe "invalid user (empty email)" $ it "fails" $ do
+    logs   <- Lib.emptyLogs
+    result <- liftIO $ Lib.run logs $ do
+      reset ()
+      UC._insertUserPswd r (otherUser { D._email = "" }) ""
+    result `shouldBe` Just UC.AnyErr
+
+  describe "invalid user (empty name)" $ it "fails" $ do
+    logs   <- Lib.emptyLogs
+    result <- liftIO $ Lib.run logs $ do
+      reset ()
+      UC._insertUserPswd r (otherUser { D._name = "" }) ""
+    result `shouldBe` Just UC.AnyErr
+
+
   describe "2 different users" $ it "succeeds" $ do
     logs   <- Lib.emptyLogs
     result <- liftIO $ Lib.run logs $ do
@@ -56,6 +73,7 @@ spec r reset = do
       Nothing <- UC._insertUserPswd r user ""
       UC._insertUserPswd r otherUser ""
     result `shouldBe` Nothing
+
 
   describe "2 users with same id" $ it "fails" $ do
     logs   <- Lib.emptyLogs
