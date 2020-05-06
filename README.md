@@ -19,6 +19,10 @@ Following the Port & Adapter architecture, the frameworks can be replaced with o
 stack run
 ```
 
+It will run by default using Servant, listening on port 3000.
+
+If you want to change this behavior, you can use Scotty with the env var `SERVER=scotty` and the port with `PORT=<the port you want>`
+
 ## TDD
 
 ```
