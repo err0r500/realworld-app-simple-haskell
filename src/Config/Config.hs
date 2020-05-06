@@ -1,5 +1,6 @@
 module Config.Config
   ( getIntFromEnv
+  , getStringFromEnv
   )
 where
 
@@ -12,7 +13,15 @@ getIntFromEnv key defaultValue = do
   result <- IOError.tryIOError $ getEnv key
   case result of
     Left  _           -> pure defaultValue
-    Right portFromEnv -> case readMaybe portFromEnv :: Maybe Int of
+    Right fromEnv -> case readMaybe fromEnv :: Maybe Int of
       Just x  -> pure x
       Nothing -> pure defaultValue
+
+
+getStringFromEnv :: String -> String -> IO String
+getStringFromEnv key defaultValue = do
+  result <- IOError.tryIOError $ getEnv key
+  case result of
+    Left  _           -> pure defaultValue
+    Right fromEnv -> pure fromEnv
 

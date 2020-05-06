@@ -1,4 +1,4 @@
-{-# LANGUAGE RankNTypes         #-}
+{-# LANGUAGE RankNTypes    #-}
 {-# LANGUAGE DeriveGeneric #-}
 
 module Adapter.Http.Lib where
