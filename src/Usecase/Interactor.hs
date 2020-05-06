@@ -6,13 +6,6 @@ import qualified Domain.User                   as D
 import qualified Data.UUID                     as UUID
 import qualified Adapter.Logger                as Logger
 
-data Interactor m = Interactor {
-  _userRepo :: UserRepo m,
-  _checkEmailFormat :: CheckEmailFormat m,
-  _genUUID :: GenUUID m,
-  _hash :: HashText m
-}
-
 -- UserRepo
 data UserRepo m = UserRepo {
   _insertUserPswd :: InsertUserPswd m,
@@ -42,7 +35,6 @@ type GenUUID m = Monad m => m UUID.UUID
 
 -- Hasher
 type HashText m = Monad m => Text -> m Text
-
 
 -- Logger
 class Monad m => Logger m where

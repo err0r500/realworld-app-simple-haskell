@@ -64,7 +64,6 @@ findUserStmtRunner stmt c = do
       pure (Left UC.AnyErr)
 
 
-
 -- statements
 insertUserStmt :: HS.Statement (UUID.UUID, Text, Text, Text) ()
 insertUserStmt = [TH.resultlessStatement|

@@ -41,7 +41,7 @@ main = do
 
 
   -- we "plug" everything, and start the router
-  router <- liftIO $ pickServer serverName (logicHandler interactor) $ runApp state
+  router <- liftIO $ pickServer serverName logicHandler $ runApp state
   Warp.run port router
 
 
@@ -51,31 +51,16 @@ newtype App a = App (RIO State a) deriving (Applicative, Functor, Monad, MonadTh
 runApp :: State -> App a -> IO a
 runApp state (App app) = runRIO state app
 
--- the interactor contains all the "adapters" functions
-interactor :: UC.Interactor App
-interactor = UC.Interactor { UC._userRepo         = userRepo
-                           , UC._checkEmailFormat = EmailChecker.checkEmailFormat
-                           , UC._genUUID          = UUIDGen.genUUIDv4
-                           , UC._hash             = FakeHasher.hash
-                           }
- where
-  userRepo = UC.UserRepo InMemUserRepo.insertUserPswd
-                         InMemUserRepo.getUserByID
-                         InMemUserRepo.getUserByEmail
-                         InMemUserRepo.getUserByName
-                         InMemUserRepo.getUserByEmailAndHashedPassword
-
 -- we partially apply the "adapters" functions to get the pure usecases
-logicHandler :: UC.Interactor App -> UC.LogicHandler App
-logicHandler i = UC.LogicHandler
-  (UC.register (UC._genUUID i)
-               (UC._checkEmailFormat i)
-               (UC._getUserByEmail $ UC._userRepo i)
-               (UC._getUserByName $ UC._userRepo i)
-               (UC._insertUserPswd $ UC._userRepo i)
+logicHandler :: UC.LogicHandler App
+logicHandler = UC.LogicHandler
+  (UC.register UUIDGen.genUUIDv4
+               EmailChecker.checkEmailFormat
+               InMemUserRepo.getUserByEmail
+               InMemUserRepo.getUserByName
+               InMemUserRepo.insertUserPswd
   )
-  (UC.login (UC._hash i) (UC._getUserByEmailAndHashedPassword $ UC._userRepo i))
-
+  (UC.login FakeHasher.hash InMemUserRepo.getUserByEmailAndHashedPassword)
 
 freshState :: MonadIO m => m State
 freshState = newTVarIO $ InMemUserRepo.Store mempty

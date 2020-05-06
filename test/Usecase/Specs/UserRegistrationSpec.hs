@@ -22,17 +22,11 @@ import qualified Usecase.Interactor            as UC
 import qualified Usecase.UserRegistration      as UC
 
 uc :: UC.Register App
-uc = UC.register (UC._genUUID i)
-                 (UC._checkEmailFormat i)
-                 (UC._getUserByEmail $ UC._userRepo i)
-                 (UC._getUserByName $ UC._userRepo i)
-                 (UC._insertUserPswd $ UC._userRepo i)
- where
-  i = UC.Interactor
-    (UC.UserRepo InMem.insertUserPswd undefined InMem.getUserByEmail InMem.getUserByName undefined)
-    MailChecker.checkEmailFormat
-    (Uuid.genUUID fakeUUID1)
-    undefined
+uc = UC.register (Uuid.genUUID fakeUUID1)
+                 MailChecker.checkEmailFormat
+                 InMem.getUserByEmail
+                 InMem.getUserByName
+                 InMem.insertUserPswd
 
 registerUser :: State -> UC.Register IO
 registerUser state name email password = run state $ uc name email password
