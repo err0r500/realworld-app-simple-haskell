@@ -26,12 +26,12 @@ data Err a = AnyErr -- if it's a tech error we don't want more details at this l
   deriving (Show, Eq)
 
 data ErrInsertUser = InsertUserConflict deriving (Show, Eq)
-type InsertUserPswd m = Monad m => D.User -> Text -> m (Maybe (Err ErrInsertUser)) -- TODO: use Either Err ()
-type GetUserByID m = Monad m => Text -> m (Either D.Error (Maybe D.User))
-type GetUserByEmail m = Monad m => Text -> m (Either D.Error (Maybe D.User))
-type GetUserByName m = Monad m => Text -> m (Either D.Error (Maybe D.User))
+type InsertUserPswd m = Monad m => D.User -> Text -> m (Maybe (Err ErrInsertUser))
+type GetUserByID m = Monad m => Text -> m (Either (Err Void) (Maybe D.User))
+type GetUserByEmail m = Monad m => Text -> m (Either (Err Void) (Maybe D.User))
+type GetUserByName m = Monad m => Text -> m (Either (Err Void) (Maybe D.User))
 type GetUserByEmailAndHashedPassword m
-  = Monad m => Text -> Text -> m (Either D.Error (Maybe D.User))
+  = Monad m => Text -> Text -> m (Either (Err Void) (Maybe D.User))
 
 -- Mail utilies
 type CheckEmailFormat m = Monad m => Text -> m (Maybe ())

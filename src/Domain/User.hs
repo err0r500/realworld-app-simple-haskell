@@ -1,19 +1,8 @@
 module Domain.User where
 
 import           RIO
+import qualified Data.UUID                     as UUID
 
-data Error
-    = ErrEmailConflict
-      | ErrNameConflict
-      | ErrIdConflict
-      | ErrMalformedEmail
-      | ErrUserNotFound
-      | ErrUserConflict
-      | ErrTechnical
-      | ErrMalformed
-    deriving (Show, Eq)
-
--- TODO : change _id to UUID.UUID
 data User =
   User { _id :: !Text
     , _name :: !Text

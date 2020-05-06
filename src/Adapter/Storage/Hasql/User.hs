@@ -49,7 +49,7 @@ findUserStmtRunner
   :: (MonadIO m, UC.Logger m)
   => Session.Session (Maybe (UUID.UUID, Text, Text))
   -> HConn.Connection
-  -> m (Either D.Error (Maybe D.User))
+  -> m (Either (UC.Err Void) (Maybe D.User))
 findUserStmtRunner stmt c = do
   result <- liftIO $ Session.run stmt c
   case result of
@@ -58,7 +58,7 @@ findUserStmtRunner stmt c = do
     Right Nothing -> pure (Right Nothing)
     Left  err     -> do
       UC.log [D.ErrorMsg err]
-      pure (Left D.ErrTechnical)
+      pure (Left UC.AnyErr)
 
 
 

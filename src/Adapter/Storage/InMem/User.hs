@@ -65,7 +65,7 @@ getUserByEmailAndHashedPassword email' pass' =
   commonSearch (\u -> email' == _email u && pass' == _password u)
 
 
-commonSearch :: InMemory r m => (User -> Bool) -> m (Either D.Error (Maybe D.User))
+commonSearch :: InMemory r m => (User -> Bool) -> m (Either (UC.Err Void) (Maybe D.User))
 commonSearch filter_ = do
   tvar <- asks DH.getter
   atomically $ do

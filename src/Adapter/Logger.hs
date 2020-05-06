@@ -7,7 +7,6 @@ import           Control.Exception
 import           Katip
 import           RIO
 import qualified Domain.Messages               as D
-import qualified Domain.User                   as D
 
 class Show a => Loggable a where
   type F a
@@ -17,11 +16,6 @@ class Show a => Loggable a where
 instance Show a => Loggable a where
   type F a = KatipContextT IO ()
   log' mess = $(logTM) ErrorS (showLS mess)
-  show' = tshow
-
-instance Loggable D.Error where
-  type F D.Error = KatipContextT IO ()
-  log' err = $(logTM) ErrorS (showLS err)
   show' = tshow
 
 instance Show a => Loggable ( D.Message a ) where
