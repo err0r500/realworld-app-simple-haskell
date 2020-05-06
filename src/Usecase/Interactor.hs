@@ -3,6 +3,7 @@ module Usecase.Interactor where
 import           RIO
 
 import qualified Domain.User                   as D
+import qualified Data.UUID                     as UUID
 import qualified Adapter.Logger                as Logger
 
 data Interactor m = Interactor {
@@ -27,7 +28,7 @@ data Err a = AnyErr -- if it's a tech error we don't want more details at this l
 
 data ErrInsertUser = InsertUserConflict deriving (Show, Eq)
 type InsertUserPswd m = Monad m => D.User -> Text -> m (Maybe (Err ErrInsertUser))
-type GetUserByID m = Monad m => Text -> m (Either (Err Void) (Maybe D.User))
+type GetUserByID m = Monad m => UUID.UUID -> m (Either (Err Void) (Maybe D.User))
 type GetUserByEmail m = Monad m => Text -> m (Either (Err Void) (Maybe D.User))
 type GetUserByName m = Monad m => Text -> m (Either (Err Void) (Maybe D.User))
 type GetUserByEmailAndHashedPassword m
@@ -37,7 +38,7 @@ type GetUserByEmailAndHashedPassword m
 type CheckEmailFormat m = Monad m => Text -> m (Maybe ())
 
 -- UUID generation
-type GenUUID m = Monad m => m Text
+type GenUUID m = Monad m => m UUID.UUID
 
 -- Hasher
 type HashText m = Monad m => Text -> m Text

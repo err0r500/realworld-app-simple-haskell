@@ -1,10 +1,11 @@
 module Adapter.Fake.UUID where
 
 import           RIO
+import qualified Data.UUID                     as UUID
 
 newtype UUIDGen = UUIDGen
-    { _uuid :: Text
+    { _uuid :: UUID.UUID
     }
 
-genUUID :: Monad m => Text -> m Text
+genUUID :: Monad m => UUID.UUID -> m UUID.UUID
 genUUID = pure

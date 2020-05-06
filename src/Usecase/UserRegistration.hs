@@ -7,6 +7,7 @@ module Usecase.UserRegistration
 where
 
 import           RIO
+import qualified Data.UUID                     as UUID
 import qualified Domain.User                   as D
 import qualified Usecase.Interactor            as UC
 
@@ -48,7 +49,7 @@ register genUUID checkEmailFn getUserByEmail getUserByName insertUserPswd name e
     checkValidation [malformedEmailRes, collidingEmailRes, collidingNameRes]
     uuid <- genUUID
     insertUser insertUserPswd (D.User uuid name email) pswd
-    pure $ Right uuid
+    pure $ Right (UUID.toText uuid)
   )
 
   (\errs -> do

@@ -19,25 +19,17 @@ import qualified Domain.Messages               as D
 import qualified Usecase.Interactor            as UC
 
 insertUserPswd :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.InsertUserPswd m
-insertUserPswd c (D.User uid' name' email') password' = case UUID.fromText uid' of
-  Nothing -> do
-    UC.log [D.ErrorMsg (uid' <> " is not a valid UUID")]
-    pure $ Just (UC.SpecificErr UC.InsertUserConflict) -- TODO fixme, should be removed
-  Just uuid -> do
-    result <- liftIO
-      $ Session.run (Session.statement (uuid, name', email', password') insertUserStmt) c
-    case result of
-      Left e -> do
-        UC.log [D.ErrorMsg e] -- TODO : actually handle conflict
-        pure $ Just (UC.SpecificErr UC.InsertUserConflict)
-      Right _ -> pure Nothing
+insertUserPswd c (D.User uid' name' email') password' = do
+  result <- liftIO
+    $ Session.run (Session.statement (uid', name', email', password') insertUserStmt) c
+  case result of
+    Left e -> do
+      UC.log [D.ErrorMsg e] -- TODO : actually handle conflict
+      pure $ Just (UC.SpecificErr UC.InsertUserConflict)
+    Right _ -> pure Nothing
 
 getUserByID :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByID m
-getUserByID c userID = case UUID.fromText userID of
-  Nothing -> do
-    UC.log [D.ErrorMsg (userID <> " is not a valid UUID")]
-    pure $ Right Nothing
-  Just uuid -> findUserStmtRunner (Session.statement uuid userByIDStmt) c
+getUserByID c id' = findUserStmtRunner (Session.statement id' userByIDStmt) c
 
 getUserByEmail :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByEmail m
 getUserByEmail c email' = findUserStmtRunner (Session.statement email' userByEmailStmt) c
@@ -54,7 +46,7 @@ findUserStmtRunner stmt c = do
   result <- liftIO $ Session.run stmt c
   case result of
     Right (Just (uuid, name, email)) ->
-      pure (Right $ Just D.User { D._id = UUID.toText uuid, D._name = name, D._email = email })
+      pure (Right $ Just D.User { D._id = uuid, D._name = name, D._email = email })
     Right Nothing -> pure (Right Nothing)
     Left  err     -> do
       UC.log [D.ErrorMsg err]

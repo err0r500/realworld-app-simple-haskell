@@ -3,6 +3,7 @@ module Adapter.Storage.InMem.User where
 import           RIO
 import qualified RIO.Map                       as Map
 import qualified Data.Has                      as DH
+import qualified Data.UUID                     as UUID
 
 import qualified Domain.User                   as D
 import qualified Usecase.Interactor            as UC
@@ -14,7 +15,7 @@ type Name = Text
 
 
 data User = User {
-  _id :: !Text
+  _id :: !UUID.UUID
   , _name :: !Text
   , _email :: !Text
   , _password :: !Text
@@ -22,7 +23,7 @@ data User = User {
 
 
 newtype Store = Store {
-  users :: Map Text User
+  users :: Map UUID.UUID User
   }
 
 

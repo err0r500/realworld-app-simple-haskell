@@ -4,6 +4,9 @@ import           RIO
 
 import           Test.Hspec
 
+import           Utils
+import qualified Data.UUID                     as UUID
+
 import qualified Storage.Lib                   as Lib
 
 import qualified Domain.User                   as D
@@ -12,9 +15,9 @@ import qualified Usecase.Interactor            as UC
 
 spec :: UC.UserRepo Lib.App -> Lib.ResetFunc Lib.App -> Spec
 spec r reset = do
-  let uid       = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+  let uid       = fakeUUID1
       user      = D.User uid "matth" "matth@example.com"
-      otherUser = D.User "61b4ea9a-cfdb-44cc-b40b-affffeedc14e" "other" "other@example.com"
+      otherUser = D.User fakeUUID2 "other" "other@example.com"
 
   -- Get User
   describe "find user by ID" $ it "succeeds" $ do

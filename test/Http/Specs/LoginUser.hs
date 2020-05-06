@@ -3,9 +3,12 @@
 module Http.Specs.LoginUser where
 
 import           RIO
+import           Utils
+
 import           Test.Hspec
 import           Test.Hspec.Wai
 import           Test.Hspec.Wai.JSON
+import qualified Data.UUID                     as UUID
 
 import qualified Http.Lib                      as Lib
 import qualified Http.Utils                    as Utils
@@ -17,7 +20,7 @@ import qualified Domain.User                   as D
 spec :: Lib.StartRouter -> Spec
 spec start = do
   let reqPath = "/api/users/login"
-      user = D.User "id" "username" "email@example.com"
+      user = D.User fakeUUID1 "username" "email@example.com"
       reqBody = [json|
                     {
                       "user": {

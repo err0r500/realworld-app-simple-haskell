@@ -8,7 +8,9 @@ import           RIO
 import           Test.Hspec
 
 import           Usecase.Lib
+import           Utils
 import           Usecase.Utils
+import qualified Data.UUID                     as UUID
 
 import qualified Adapter.EmailChecker          as MailChecker
 import qualified Adapter.Fake.Logger           as Logger
@@ -29,7 +31,7 @@ uc = UC.register (UC._genUUID i)
   i = UC.Interactor
     (UC.UserRepo InMem.insertUserPswd undefined InMem.getUserByEmail InMem.getUserByName undefined)
     MailChecker.checkEmailFormat
-    (Uuid.genUUID defaultFakeUUID)
+    (Uuid.genUUID fakeUUID1)
     undefined
 
 registerUser :: State -> UC.Register IO
@@ -37,15 +39,15 @@ registerUser state name email password = run state $ uc name email password
 
 spec :: Spec
 spec = do
-  let prevUser       = D.User "prevID" "collidingUserName" "colliding@email.fr"
-      currUser       = D.User "currID" "currentUserName" "current@email.fr"
+  let prevUser       = D.User fakeUUID1 "collidingUserName" "colliding@email.fr"
+      currUser       = D.User fakeUUID2 "currentUserName" "current@email.fr"
       malformedEmail = "current.email.fr" :: Text
       password       = "myPass" :: Text
 
   describe "happy case" $ it "should return the uuid" $ do
     state      <- emptyState
     Right uuid <- registerUser state (D._name currUser) (D._email currUser) password
-    uuid `shouldBe` defaultFakeUUID
+    uuid `shouldBe` UUID.toText fakeUUID1
 
 
   describe "collision with other user email" $ it "raises an UserEmailAlreadyInUse error" $ do

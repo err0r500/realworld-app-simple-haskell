@@ -6,7 +6,9 @@ where
 import           RIO
 
 import           Test.Hspec
+import qualified Data.UUID                     as UUID
 
+import           Utils
 import           Usecase.Lib
 import           Usecase.Utils
 
@@ -30,7 +32,7 @@ spec :: Spec
 spec = do
   let userEmail    = "userEmail"
       userPassword = "userPassword" :: Text
-      myUser       = D.User "id" "userName" userEmail
+      myUser       = D.User fakeUUID1 "userName" userEmail
 
   describe "happy case" $ it "returns an uuid if found" $ do
     state     <- insertUserPswd_ myUser ("hashed-" <> userPassword)
