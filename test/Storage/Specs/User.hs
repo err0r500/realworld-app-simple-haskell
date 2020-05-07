@@ -27,8 +27,9 @@ spec r reset = do
       user      = D.User uid "matth" "matth@example.com"
       otherUser = D.User fakeUUID2 "other" "other@example.com"
 
-  -- Get User
   before (resetAndGetLogs reset) $ do
+
+  -- Get User
     describe "find user by ID" $ it "succeeds" $ \logs -> do
       Right result <- appToIO logs $ do
         Nothing <- UC._insertUserPswd r user ""

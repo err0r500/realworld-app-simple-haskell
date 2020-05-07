@@ -29,58 +29,50 @@ uc = UC.register (Uuid.genUUID fakeUUID1)
                  InMem.insertUserPswd
 
 registerUser :: State -> UC.Register IO
-registerUser state name email password = run state $ uc name email password
+registerUser st name email pswd = run st $ uc name email pswd
 
 spec :: Spec
 spec = do
-  let prevUser       = D.User fakeUUID1 "collidingUserName" "colliding@email.fr"
-      currUser       = D.User fakeUUID2 "currentUserName" "current@email.fr"
+  let prevUsr        = D.User fakeUUID1 "collidingUserName" "colliding@email.fr"
+      currUsr        = D.User fakeUUID2 "currentUserName" "current@email.fr"
       malformedEmail = "current.email.fr" :: Text
-      password       = "myPass" :: Text
+      pswd           = "myPass" :: Text
+      insertPrev st = run st $ InMem.insertUserPswd prevUsr pswd
 
-  describe "happy case" $ it "should return the uuid" $ do
-    state      <- emptyState
-    Right uuid <- registerUser state (D._name currUser) (D._email currUser) password
-    uuid `shouldBe` UUID.toText fakeUUID1
-
-
-  describe "collision with other user email" $ it "raises an UserEmailAlreadyInUse error" $ do
-    state <- emptyState
-    run state $ InMem.insertUserPswd prevUser password
-    Left (UC.ErrValidation resp) <- registerUser state
-                                                 (D._name currUser)
-                                                 (D._email prevUser)
-                                                 password
-    resp `shouldBe` [UC.EmailConflict]
-    checkLogs state [UC.EmailConflict]
+  before emptyState $ do
+    describe "happy case" $ it "should return the uuid" $ \st -> do
+      Right uuid <- registerUser st (D._name currUsr) (D._email currUsr) pswd
+      uuid `shouldBe` UUID.toText fakeUUID1
 
 
-  describe "collision with other user name" $ it "raises an UserNameAlreadyInUse error" $ do
-    state <- emptyState
-    run state $ InMem.insertUserPswd prevUser password
-    Left (UC.ErrValidation resp) <- registerUser state
-                                                 (D._name prevUser)
-                                                 (D._email currUser)
-                                                 password
-    resp `shouldBe` [UC.NameConflict]
-    checkLogs state [UC.NameConflict]
+    describe "collision with other user email"
+      $ it "raises an UserEmailAlreadyInUse error"
+      $ \st -> do
+          insertPrev st
+          Left (UC.ErrValidation resp) <- registerUser st (D._name currUsr) (D._email prevUsr) pswd
+          resp `shouldBe` [UC.EmailConflict]
+          checkLogs st [UC.EmailConflict]
 
 
-  describe "collision with other user name & other user email"
-    $ it "raises UserNameAlreadyInUse & UserEmailAlreadyInUse errors"
-    $ do
-        state <- emptyState
-        run state $ InMem.insertUserPswd prevUser password
-        Left (UC.ErrValidation resp) <- registerUser state
-                                                     (D._name prevUser)
-                                                     (D._email prevUser)
-                                                     password
-        resp `shouldMatchList` [UC.NameConflict, UC.EmailConflict]
-        checkLogs state [UC.NameConflict, UC.EmailConflict]
+    describe "collision with other user name" --
+      $ it "raises an UserNameAlreadyInUse error"
+      $ \st -> do
+          insertPrev st
+          Left (UC.ErrValidation resp) <- registerUser st (D._name prevUsr) (D._email currUsr) pswd
+          resp `shouldBe` [UC.NameConflict]
+          checkLogs st [UC.NameConflict]
 
 
-  describe "malformed email" $ it "raises an MalformedEmail error" $ do
-    state                        <- emptyState
-    Left (UC.ErrValidation resp) <- registerUser state (D._name currUser) malformedEmail password
-    resp `shouldMatchList` [UC.MalformedEmail]
-    checkLogs state [UC.MalformedEmail]
+    describe "collision with other user name & other user email"
+      $ it "raises UserNameAlreadyInUse & UserEmailAlreadyInUse errors"
+      $ \st -> do
+          insertPrev st
+          Left (UC.ErrValidation resp) <- registerUser st (D._name prevUsr) (D._email prevUsr) pswd
+          resp `shouldMatchList` [UC.NameConflict, UC.EmailConflict]
+          checkLogs st [UC.NameConflict, UC.EmailConflict]
+
+
+    describe "malformed email" $ it "raises an MalformedEmail error" $ \st -> do
+      Left (UC.ErrValidation resp) <- registerUser st (D._name currUsr) malformedEmail pswd
+      resp `shouldMatchList` [UC.MalformedEmail]
+      checkLogs st [UC.MalformedEmail]
