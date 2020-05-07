@@ -14,6 +14,19 @@ Following the Port & Adapter architecture, the frameworks can be replaced with o
 - Logs : [Katip](https://hackage.haskell.org/package/katip) & Tvar (business logic tests)
 - Testing : [Hspec](https://hackage.haskell.org/package/hspec)
 
+## System dependencies 
+
+The following libs are needed on your system :
+- ghc-pcre-light
+- pcre-devel
+- libpq-devel
+
+on a Fedora system it's installed like so : 
+```
+dnf install ghc-pcre-light pcre-devel
+dnf install libpq-devel
+```
+
 ## start the App
 ```
 stack run
