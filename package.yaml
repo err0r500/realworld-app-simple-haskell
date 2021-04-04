@@ -1,10 +1,8 @@
 name:                haskell-clean-architecture
 version:             0.1.0.0
-github:              "Github username here/real-world-app"
+github:              "err0r500/haskell-clean-arch-realworld-app"
 license:             GPL-3
-author:              "Author name here"
-maintainer:          "Author email here"
-copyright:           "2019 Author name here"
+author:              "err0r500"
 
 extra-source-files:
   - README.md
@@ -12,31 +10,30 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/err0r500/haskell-clean-architecture#readme>
 
 dependencies:
-  - base >= 4.7 && < 5
-  - rio >= 0.1.15.0 && < 0.2
+  - base
+  - rio
   - data-has
 
   # the logger
-  - katip >= 0.8.4.0
+  - katip
 
-  # the http server, may be replaced by servant
-  - aeson
-
+  # the http servers
   - scotty
+  - servant-server
+
   - wai
   - wai-extra
   - warp
   - http-types
-
-  - servant-server == 0.17
   - mtl
+  - aeson
 
   # storage
-  - hasql == 1.4.2
-  - hasql-th >= 0.4.0.6
+  - hasql
+  - hasql-th
   - postgresql-error-codes
 
-  # various
+  # various utilities
   - uuid
   - email-validate
 
@@ -74,8 +71,8 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - haskell-clean-architecture
       - hspec-discover
       - hspec
       - hspec-wai
       - hspec-wai-json
+      - haskell-clean-architecture

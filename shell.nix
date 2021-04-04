@@ -13,6 +13,8 @@ let
          unstable.ghc
          unstable.haskell-language-server
          unstable.haskellPackages.brittany
+         unstable.haskellPackages.hspec-discover
+         unstable.hpack
 
          stable.libdeflate
          stable.fzf
