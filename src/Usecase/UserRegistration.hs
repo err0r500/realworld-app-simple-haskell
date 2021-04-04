@@ -23,7 +23,8 @@ data Err = ErrTechnical
 instance Exception Err
 
 -- specific validation errors
-data ValidationErr = EmailConflict
+data ValidationErr =
+    EmailConflict
   | NameConflict
   | IdConflict
   | MalformedEmail

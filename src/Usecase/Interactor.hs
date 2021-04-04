@@ -22,6 +22,10 @@ data Err a = AnyErr -- if it's a tech error we don't want more details at this l
 data ErrInsertUser = InsertUserConflict
   deriving (Show, Eq)
 type InsertUserPswd m = Monad m => D.User -> Text -> m (Maybe (Err ErrInsertUser))
+
+-- Err Void is obviously impossible to construct, the single constructor is then AnyErr
+-- the idea is to make explicit the fact we don't care specially about some specific things
+-- that may go wrong (contrary to the `Err ErrInsertUser` above, for example).
 type GetUserByID m = Monad m => UUID.UUID -> m (Either (Err Void) (Maybe D.User))
 type GetUserByEmail m = Monad m => Text -> m (Either (Err Void) (Maybe D.User))
 type GetUserByName m = Monad m => Text -> m (Either (Err Void) (Maybe D.User))
@@ -40,5 +44,3 @@ type HashText m = Monad m => Text -> m Text
 -- Logger
 class Monad m => Logger m where
   log :: Logger.Loggable a => [a] -> m ()
-
-
