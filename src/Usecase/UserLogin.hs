@@ -1,7 +1,7 @@
 module Usecase.UserLogin where
 
-import           RIO
 import qualified Domain.User                   as D
+import           RIO
 import qualified Usecase.Interactor            as UC
 
 data Err = ErrTech | UserNotFound deriving (Show, Eq)

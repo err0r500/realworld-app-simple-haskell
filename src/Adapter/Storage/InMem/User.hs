@@ -1,9 +1,9 @@
 module Adapter.Storage.InMem.User where
 
-import           RIO
-import qualified RIO.Map                       as Map
 import qualified Data.Has                      as DH
 import qualified Data.UUID                     as UUID
+import           RIO
+import qualified RIO.Map                       as Map
 
 import qualified Domain.User                   as D
 import qualified Usecase.Interactor            as UC
@@ -14,12 +14,13 @@ type InMemory r m = (DH.Has (TVar Store) r, MonadReader r m, MonadIO m)
 type Name = Text
 
 
-data User = User {
-  _id :: !UUID.UUID
-  , _name :: !Text
-  , _email :: !Text
+data User = User
+  { _id       :: !UUID.UUID
+  , _name     :: !Text
+  , _email    :: !Text
   , _password :: !Text
-  } deriving ( Show, Eq )
+  }
+  deriving (Show, Eq)
 
 
 newtype Store = Store {
@@ -42,7 +43,7 @@ insertUserPswd (D.User uid' name' email') password' = do
     state <- readTVar tvar
     writeTVar tvar
               state { users = Map.insert uid' (User uid' name' email' password') $ users state }
-    pure $ Nothing
+    pure Nothing
 
 
 getUserByID :: InMemory r m => UC.GetUserByID m
@@ -74,4 +75,3 @@ commonSearch filter_ = do
     case filter filter_ $ map snd $ Map.toList (users state) of
       []      -> pure $ Right Nothing
       (x : _) -> pure $ Right (Just (toDomain x))
-

@@ -1,7 +1,7 @@
 module Adapter.Fake.UUID where
 
-import           RIO
 import qualified Data.UUID                     as UUID
+import           RIO
 
 newtype UUIDGen = UUIDGen
     { _uuid :: UUID.UUID

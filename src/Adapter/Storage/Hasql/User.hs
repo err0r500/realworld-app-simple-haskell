@@ -7,17 +7,17 @@ import           RIO                     hiding ( trace )
 
 import qualified Data.UUID                     as UUID
 
-import qualified Hasql.Statement               as HS
-import qualified Hasql.Encoders                as HE
-import qualified Hasql.Decoders                as HD
-import qualified Hasql.TH                      as TH
 import qualified Hasql.Connection              as HConn
+import qualified Hasql.Decoders                as HD
+import qualified Hasql.Encoders                as HE
 import qualified Hasql.Session                 as Session
+import qualified Hasql.Statement               as HS
+import qualified Hasql.TH                      as TH
 import qualified PostgreSQL.ErrorCodes         as PgErr
                                                 ( unique_violation )
 
-import qualified Domain.User                   as D
 import qualified Domain.Messages               as D
+import qualified Domain.User                   as D
 import qualified Usecase.Interactor            as UC
 
 

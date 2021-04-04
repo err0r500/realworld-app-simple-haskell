@@ -7,14 +7,14 @@ import           System.IO
 
 import qualified Network.Wai.Handler.Warp      as Warp
 
-import qualified Config.Config                 as Config
 import qualified Adapter.EmailChecker          as EmailChecker
+import qualified Config.Config                 as Config
 
 
-import qualified Adapter.Http.Servant.Router   as ServantRouter
-import qualified Adapter.Http.Scotty.Router    as ScottyRouter
 import qualified Adapter.Http.Lib              as SharedHttp
                                                 ( Router )
+import qualified Adapter.Http.Scotty.Router    as ScottyRouter
+import qualified Adapter.Http.Servant.Router   as ServantRouter
 
 import qualified Adapter.Storage.InMem.User    as InMemUserRepo
 
@@ -63,13 +63,11 @@ logicHandler = UC.LogicHandler
   (UC.login FakeHasher.hash InMemUserRepo.getUserByEmailAndHashedPassword)
 
 freshState :: MonadIO m => m State
-freshState = 
-  newTVarIO $ InMemUserRepo.Store mempty
+freshState = newTVarIO $ InMemUserRepo.Store mempty
 
 pickServer
   :: (MonadUnliftIO m, MonadIO m, UC.Logger m, MonadThrow m) => String -> SharedHttp.Router m
-pickServer str = 
-  if   str == "scotty" then ScottyRouter.start else ServantRouter.start
+pickServer str = if str == "scotty" then ScottyRouter.start else ServantRouter.start
 
 instance UC.Logger App where
   log = KatipLogger.log

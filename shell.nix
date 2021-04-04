@@ -12,6 +12,7 @@ let
          unstable.cabal-install
          unstable.ghc
          unstable.haskell-language-server
+         unstable.haskellPackages.brittany
 
          stable.libdeflate
          stable.fzf

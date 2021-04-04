@@ -4,9 +4,9 @@
 module Adapter.Logger where
 
 import           Control.Exception
+import qualified Domain.Messages               as D
 import           Katip
 import           RIO
-import qualified Domain.Messages               as D
 
 class Show a => Loggable a where
   type F a
