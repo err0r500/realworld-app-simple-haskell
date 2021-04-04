@@ -13,7 +13,7 @@ import qualified Adapter.Http.Lib              as Lib
 import qualified Usecase.Interactor            as UC
 import qualified Usecase.LogicHandler          as UC
 
-import qualified Adapter.Http.Servant.RegisterUser as Handler
+import  qualified Adapter.Http.Servant.RegisterUser as Handler
 import qualified Adapter.Http.Servant.LoginUser as Handler
 
 

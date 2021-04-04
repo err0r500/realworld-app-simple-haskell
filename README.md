@@ -54,18 +54,21 @@ stack hpc report . --destdir ./coverage
 The persistence tests expect to be able to connect to a postgresql database like so :
 
 ```
-hostname: postgres
+hostname: localhost
 port: 5432
 user: postgres
-password: example
+password: password
 db: postgres
+```
+
+with docker on your local machine : 
+```
+docker run --rm --name postgres -e POSTGRES_PASSWORD=password -d -p 5432:5432 postgres
 ```
 
 To create the schema, use the file [pg.sql](./scripts/pg.sql).
 
-Example with psql :
-
 ```
-PGPASSWORD=example psql -h postgres -U postgres -d postgres -f ./pg.sql
+PGPASSWORD=password psql -h postgres -U postgres -d postgres -f ./scripts/pg.sql
 ```
 

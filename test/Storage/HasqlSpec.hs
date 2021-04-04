@@ -16,7 +16,7 @@ import qualified Storage.Lib                   as Lib
 
 
 connSettings :: Connection.Settings
-connSettings = Connection.settings "postgres" 5432 "postgres" "example" "postgres"
+connSettings = Connection.settings "localhost" 5432 "postgres" "password" "postgres"
 
 resetFunc :: Connection.Connection -> Lib.ResetFunc Lib.App
 resetFunc = Storage.truncateTable

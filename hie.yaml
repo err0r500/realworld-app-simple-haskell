@@ -1,7 +1,7 @@
 cradle:
-  stack:
+  cabal:
     - path: ./src
-      component: "haskell-clean-architecture:lib"
+      component: "haskell-clean-architecture:haskell-clean-architecture-exe"
     - path: ./app
       component: "haskell-clean-architecture:haskell-clean-architecture-exe"
     - path: ./test

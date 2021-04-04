@@ -63,11 +63,13 @@ logicHandler = UC.LogicHandler
   (UC.login FakeHasher.hash InMemUserRepo.getUserByEmailAndHashedPassword)
 
 freshState :: MonadIO m => m State
-freshState = newTVarIO $ InMemUserRepo.Store mempty
+freshState = 
+  newTVarIO $ InMemUserRepo.Store mempty
 
 pickServer
   :: (MonadUnliftIO m, MonadIO m, UC.Logger m, MonadThrow m) => String -> SharedHttp.Router m
-pickServer str = if str == "scotty" then ScottyRouter.start else ServantRouter.start
+pickServer str = 
+  if   str == "scotty" then ScottyRouter.start else ServantRouter.start
 
 instance UC.Logger App where
   log = KatipLogger.log
