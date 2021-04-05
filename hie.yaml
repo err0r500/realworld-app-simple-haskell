@@ -1,9 +1,0 @@
-cradle:
-  cabal:
-    - path: ./src
-      component: "haskell-clean-architecture:haskell-clean-architecture-exe"
-    - path: ./app
-      component: "haskell-clean-architecture:haskell-clean-architecture-exe"
-    - path: ./test
-      component: "haskell-clean-architecture:haskell-clean-architecture-test"
-      

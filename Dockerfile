@@ -16,7 +16,6 @@ RUN cabal v2-build --dependencies-only all
 # copy app's source files
 COPY app app/
 COPY src src/
-COPY Setup.hs . 
 
 # build the app 
 RUN hpack
