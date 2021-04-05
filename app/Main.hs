@@ -7,14 +7,14 @@ import           System.IO
 
 import qualified Network.Wai.Handler.Warp      as Warp
 
-import qualified Config.Config                 as Config
 import qualified Adapter.EmailChecker          as EmailChecker
+import qualified Config.Config                 as Config
 
 
-import qualified Adapter.Http.Servant.Router   as ServantRouter
-import qualified Adapter.Http.Scotty.Router    as ScottyRouter
 import qualified Adapter.Http.Lib              as SharedHttp
                                                 ( Router )
+import qualified Adapter.Http.Scotty.Router    as ScottyRouter
+import qualified Adapter.Http.Servant.Router   as ServantRouter
 
 import qualified Adapter.Storage.InMem.User    as InMemUserRepo
 

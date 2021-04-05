@@ -2,16 +2,14 @@ module Adapter.Http.Scotty.Router where
 
 import           RIO
 
-
-
 import qualified Network.HTTP.Types            as HttpTypes
 import qualified Web.Scotty.Trans              as ScottyT
 
+import qualified Adapter.Http.Lib              as Lib
+import           Adapter.Http.Scotty.LoginUser
+import           Adapter.Http.Scotty.RegisterUser
 import qualified Usecase.Interactor            as UC
 import qualified Usecase.LogicHandler          as UC
-import qualified Adapter.Http.Lib              as Lib
-import           Adapter.Http.Scotty.RegisterUser
-import           Adapter.Http.Scotty.LoginUser
 
 
 start :: (MonadThrow m, MonadIO m, UC.Logger m) => Lib.Router m

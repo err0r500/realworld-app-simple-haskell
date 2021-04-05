@@ -1,8 +1,8 @@
 module Adapter.Fake.Logger where
 
-import           RIO
-import qualified Data.Has                      as Has
 import qualified Adapter.Logger                as Adapter
+import qualified Data.Has                      as Has
+import           RIO
 
 newtype Logs = Logs
     { logs :: [Text]

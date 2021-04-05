@@ -1,9 +1,9 @@
 module Adapter.Http.Scotty.LoginUser where
 
-import           RIO
 import           Network.HTTP.Types             ( status404
                                                 , status500
                                                 )
+import           RIO
 import qualified Web.Scotty.Trans              as ScottyT
 
 import           Adapter.Http.Lib              as Lib

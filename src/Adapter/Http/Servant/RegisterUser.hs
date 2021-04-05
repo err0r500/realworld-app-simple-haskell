@@ -17,4 +17,3 @@ registerUser uc (Lib.RegisterDetails name email password) = do
     Left  (UC.ErrValidation _) -> throwM err422
     Left  (UC.ErrTechnical   ) -> throwM err500
     Right uuid                 -> pure uuid
-

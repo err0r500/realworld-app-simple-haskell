@@ -19,4 +19,3 @@ loginUser uc (Lib.LoginDetails email password) = do
   case resp of
     Left  _    -> throwM err404
     Right user -> pure $ Lib.User $ Lib.fromDomain user
-

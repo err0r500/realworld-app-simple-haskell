@@ -1,7 +1,7 @@
 module Utils where
 
-import           RIO
 import qualified Data.UUID                     as UUID
+import           RIO
 
 -- used for tests
 fakeUUID1 :: UUID.UUID
@@ -14,4 +14,3 @@ getUUID :: Text -> UUID.UUID
 getUUID txt = do
   let Just uuid = UUID.fromText txt
   uuid
-

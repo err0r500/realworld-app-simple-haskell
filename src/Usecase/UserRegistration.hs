@@ -3,12 +3,11 @@ module Usecase.UserRegistration
   , Register
   , Err(..)
   , ValidationErr(..)
-  )
-where
+  ) where
 
-import           RIO
 import qualified Data.UUID                     as UUID
 import qualified Domain.User                   as D
+import           RIO
 import qualified Usecase.Interactor            as UC
 
 -- log business errors (example : get user return nothing is not an error at storage level but must be handled)
@@ -24,7 +23,8 @@ data Err = ErrTechnical
 instance Exception Err
 
 -- specific validation errors
-data ValidationErr = EmailConflict
+data ValidationErr =
+    EmailConflict
   | NameConflict
   | IdConflict
   | MalformedEmail

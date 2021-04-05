@@ -1,9 +1,0 @@
-cradle:
-  stack:
-    - path: ./src
-      component: "haskell-clean-architecture:lib"
-    - path: ./app
-      component: "haskell-clean-architecture:haskell-clean-architecture-exe"
-    - path: ./test
-      component: "haskell-clean-architecture:haskell-clean-architecture-test"
-      

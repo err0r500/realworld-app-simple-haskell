@@ -1,5 +1,5 @@
-DROP TABLE public.Users;
-DROP SEQUENCE public.users_id_seq;
+DROP TABLE IF EXISTS public.Users;
+DROP SEQUENCE IF EXISTS public.users_id_seq;
 
 CREATE SEQUENCE public.users_id_seq;
 

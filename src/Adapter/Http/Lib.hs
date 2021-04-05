@@ -38,7 +38,8 @@ instance FromJSON a => FromJSON (User a) where
 data UserDetails = UserDetails
   { user_username :: Text
   , user_email    :: Text
-  } deriving (Eq, Show, Generic)
+  }
+  deriving (Eq, Show, Generic)
 
 instance FromJSON UserDetails where
   parseJSON = genericParseJSON $ stripping "user_"
@@ -55,7 +56,8 @@ data RegisterDetails = RegisterDetails
   { register_email    :: Text
   , register_username :: Text
   , register_password :: Text
-  } deriving (Eq, Show, Generic)
+  }
+  deriving (Eq, Show, Generic)
 
 instance FromJSON RegisterDetails where
   parseJSON = genericParseJSON $ stripping "register_"
@@ -68,7 +70,8 @@ instance ToJSON RegisterDetails where
 data LoginDetails = LoginDetails
   { login_email    :: Text
   , login_password :: Text
-  } deriving (Eq, Show, Generic)
+  }
+  deriving (Eq, Show, Generic)
 
 instance FromJSON LoginDetails where
   parseJSON = genericParseJSON $ stripping "login_"

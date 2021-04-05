@@ -1,8 +1,10 @@
 module Adapter.Http.Scotty.RegisterUser where
 
+import           Network.HTTP.Types             ( status422
+                                                , status500
+                                                )
 import           RIO
 import           RIO.Text.Lazy
-import           Network.HTTP.Types             ( status422, status500 )
 import qualified Web.Scotty.Trans              as ScottyT
 
 import           Adapter.Http.Lib              as Lib
@@ -15,5 +17,5 @@ registerUser uc = do
     $ uc (Lib.register_email body) (Lib.register_username body) (Lib.register_password body)
   case resp of
     Left  (UC.ErrValidation _) -> ScottyT.status status422
-    Left  (UC.ErrTechnical   ) -> ScottyT.status status500
+    Left  UC.ErrTechnical      -> ScottyT.status status500
     Right uuid                 -> ScottyT.html $ fromStrict uuid
