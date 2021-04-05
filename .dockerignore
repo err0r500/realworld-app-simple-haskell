@@ -1,0 +1,10 @@
+.dockerignore
+Dockerfile
+
+.git/
+.gitignore
+
+dist-newstyle/
+haskell-clean-architecture.cabal
+
+README.md

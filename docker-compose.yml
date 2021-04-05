@@ -1,0 +1,18 @@
+version: '2'
+
+services:
+  postgres:
+    image: postgres:13.2-alpine
+    environment:
+      - POSTGRES_PASSWORD=password
+
+  conduit:
+    image: haskell-clean-architecture
+    ports:
+      - 3000:3000
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - 16686:16686
+

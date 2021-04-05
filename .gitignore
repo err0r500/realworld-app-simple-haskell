@@ -1,8 +1,2 @@
-out/
-coverage/
 haskell-clean-architecture.cabal
-*~
-.hspec-failures
-*.iml
-result
 dist-newstyle

@@ -3,10 +3,6 @@ version:             0.1.0.0
 github:              "err0r500/haskell-clean-arch-realworld-app"
 license:             GPL-3
 author:              "err0r500"
-
-extra-source-files:
-  - README.md
-
 description:         Please see the README on GitHub at <https://github.com/err0r500/haskell-clean-architecture#readme>
 
 dependencies:
@@ -59,6 +55,8 @@ executables:
       - -threaded
       - -rtsopts
       - -with-rtsopts=-N
+      - -static
+      - -optl=-static
     dependencies:
       - haskell-clean-architecture
 
