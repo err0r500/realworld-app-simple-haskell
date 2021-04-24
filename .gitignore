@@ -1,2 +1,3 @@
 haskell-clean-architecture.cabal
 dist-newstyle
+app-exe

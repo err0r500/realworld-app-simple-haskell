@@ -1,10 +1,13 @@
-.dockerignore
-Dockerfile
-
 .git/
 .gitignore
 
-dist-newstyle/
-haskell-clean-architecture.cabal
+Dockerfile
+docker-compose.yml
+.dockerignore
 
+dist-newstyle/
+
+Makefile
 README.md
+LICENSE
+shell.nix

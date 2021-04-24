@@ -1,28 +1,24 @@
-FROM haskell:8.10.4 AS build-env
+FROM utdemir/ghc-musl:v19-ghc8104 AS build-env
 
 # update package managers, install builder deps
 RUN cabal update
-RUN apt-get update 
-RUN apt-get install -y libpq-dev hpack libyaml-0-2
+RUN apk add postgresql-dev 
 
 WORKDIR haskell-clean
 
 # install deps only
-COPY package.yaml .
-COPY cabal.project.freeze .
-RUN hpack
-RUN cabal v2-build --dependencies-only all
+COPY haskell-clean-architecture.cabal .
+RUN cabal v2-build --enable-executable-static --dependencies-only all 
 
 # copy app's source files
 COPY app app/
 COPY src src/
 
 # build the app 
-RUN hpack
-RUN cabal v2-build exe:haskell-clean-architecture-exe
+RUN cabal v2-build --enable-executable-static exe:haskell-clean-architecture-exe
 RUN cp ./dist-newstyle/build/x86_64-linux/ghc-8.10.4/haskell-clean-architecture-0.1.0.0/x/haskell-clean-architecture-exe/build/haskell-clean-architecture-exe/haskell-clean-architecture-exe ./app-exe
 
-FROM alpine:3.13.5 
-USER nobody
-COPY --from=build-env --chown=nobody:nobody /haskell-clean/app-exe ./app
+FROM gcr.io/distroless/base:nonroot
+USER nonroot
+COPY --from=build-env --chown=nonroot:nonroot /haskell-clean/app-exe ./app
 ENTRYPOINT ["./app"]
