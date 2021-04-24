@@ -6,15 +6,16 @@ build:
 run: 
 	cabal v2-run haskell-clean-architecture-exe
 
-tests:
-	cabal v2-test --enable-coverage --test-show-details=streaming
-
-docker-build:
+build-docker:
 	docker build -t haskell-clean-architecture .
 
-docker-run: docker-build
+run-docker: docker-build
 	docker run --rm -p 3000:3000 haskell-clean-architecture
 
-start-pg: 
-	docker run --rm -d -p 5432:5432 -e POSTGRES_PASSWORD=password postgres
+test: start-pg
+	sleep 1
+	cabal v2-test --test-show-details=direct
+	docker stop pg-test
 
+start-pg: 
+	docker run -d --rm -p 5432:5432 -e POSTGRES_PASSWORD=password --name=pg-test -v $(shell pwd)/scripts/pg.sql:/docker-entrypoint-initdb.d/init.sql postgres

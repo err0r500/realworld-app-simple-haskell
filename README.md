@@ -14,61 +14,17 @@ Following the Port & Adapter architecture, the frameworks can be replaced with o
 - Logs : [Katip](https://hackage.haskell.org/package/katip) & Tvar (business logic tests)
 - Testing : [Hspec](https://hackage.haskell.org/package/hspec)
 
-## System dependencies 
-
-The following libs are needed on your system :
-- ghc-pcre-light
-- pcre-devel
-- libpq-devel
-
-on a Fedora system it's installed like so : 
-```
-dnf install ghc-pcre-light pcre-devel
-dnf install libpq-devel
-```
-
 ## start the App
+
 ```
-stack run
+make run
+```
+
+or the using docker (requires no local system dependency)
+```
+make run-docker
 ```
 
 It will run by default using Servant, listening on port 3000.
 
 If you want to change this behavior, you can use Scotty with the env var `SERVER=scotty` and the port with `PORT=<the port you want>`
-
-## TDD
-
-```
-stack test --fast --file-watch
-```
-
-### Code coverage 
-
-```
-stack test --coverage
-stack hpc report . --destdir ./coverage
-```
-
-## Persitence Tests
-
-The persistence tests expect to be able to connect to a postgresql database like so :
-
-```
-hostname: localhost
-port: 5432
-user: postgres
-password: password
-db: postgres
-```
-
-with docker on your local machine : 
-```
-docker run --rm --name postgres -e POSTGRES_PASSWORD=password -d -p 5432:5432 postgres
-```
-
-To create the schema, use the file [pg.sql](./scripts/pg.sql).
-
-```
-PGPASSWORD=password psql -h postgres -U postgres -d postgres -f ./scripts/pg.sql
-```
-
