@@ -1,13 +1,12 @@
 module Storage.Lib where
 
-import           RIO
-
-import           Control.Monad.Fail
-import qualified Usecase.Interactor            as UC
-import qualified Adapter.Fake.Logger           as Logger
-
+import qualified Adapter.Fake.Logger as Logger
+import Control.Monad.Fail
+import RIO
+import qualified Usecase.Interactor as UC
 
 type Logs = TVar Logger.Logs
+
 newtype App a = App (RIO Logs a) deriving (Functor, Applicative, Monad, MonadReader Logs, MonadIO)
 
 instance MonadFail App where

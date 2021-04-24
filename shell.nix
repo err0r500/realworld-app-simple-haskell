@@ -10,11 +10,11 @@ let
     buildInputs =                                
        [ 
          unstable.cabal-install
+         unstable.hpack
          unstable.ghc
          unstable.haskell-language-server
-         unstable.haskellPackages.brittany
          unstable.haskellPackages.hspec-discover
-         unstable.hpack
+         unstable.haskellPackages.ormolu
 
          stable.libdeflate
          stable.fzf
