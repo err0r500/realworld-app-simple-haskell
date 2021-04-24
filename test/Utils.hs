@@ -1,7 +1,7 @@
 module Utils where
 
-import qualified Data.UUID                     as UUID
-import           RIO
+import qualified Data.UUID as UUID
+import RIO
 
 -- used for tests
 fakeUUID1 :: UUID.UUID
