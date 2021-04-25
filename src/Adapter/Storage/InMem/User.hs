@@ -24,13 +24,13 @@ newtype Store = Store
   }
 
 fromDomain :: D.User -> User
-fromDomain d = User (D._id d) (D._name d) (D._email d) ""
+fromDomain (D.User id' (D.Name name) (D.Email email)) = User id' name email "" -- (D._id d) (D._name d) (D.unEmail $ D._email d) ""
 
 toDomain :: User -> D.User
-toDomain u = D.User (_id u) (_name u) (_email u)
+toDomain u = D.User (_id u) (D.Name $ _name u) (D.Email $ _email u)
 
 insertUserPswd :: InMemory r m => UC.InsertUserPswd m
-insertUserPswd (D.User uid' name' email') password' = do
+insertUserPswd (D.User uid' (D.Name name') (D.Email email')) (D.Password password') = do
   tvar <- asks DH.getter
   atomically $ do
     state <- readTVar tvar
@@ -47,13 +47,13 @@ getUserByID userID = do
     pure $ Right $ toDomain <$> Map.lookup userID (users state)
 
 getUserByEmail :: InMemory r m => UC.GetUserByEmail m
-getUserByEmail email' = commonSearch (\u -> email' == _email u)
+getUserByEmail (D.Email email') = commonSearch (\u -> email' == _email u)
 
 getUserByName :: InMemory r m => UC.GetUserByName m
-getUserByName name' = commonSearch (\u -> name' == _name u)
+getUserByName (D.Name name') = commonSearch (\u -> name' == _name u)
 
 getUserByEmailAndHashedPassword :: InMemory r m => UC.GetUserByEmailAndHashedPassword m
-getUserByEmailAndHashedPassword email' pass' =
+getUserByEmailAndHashedPassword (D.Email email') (D.Password pass') =
   commonSearch (\u -> email' == _email u && pass' == _password u)
 
 commonSearch :: InMemory r m => (User -> Bool) -> m (Either (UC.Err Void) (Maybe D.User))

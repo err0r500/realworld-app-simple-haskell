@@ -19,7 +19,7 @@ import Utils
 spec :: Lib.StartRouter -> Spec
 spec start = do
   let reqPath = "/api/users/login"
-      user = D.User fakeUUID1 "username" "email@example.com"
+      user = D.User fakeUUID1 (D.Name "username") (D.Email "email@example.com")
       reqBody =
         [json|
                     {

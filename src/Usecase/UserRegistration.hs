@@ -15,7 +15,7 @@ import qualified Usecase.Interactor as UC
 
 -- PUBLIC
 -- the pure logic usecase signature
-type Register m = Monad m => Text -> Text -> Text -> m (Either Err Text)
+type Register m = Monad m => D.Name -> D.Email -> D.Password -> m (Either Err Text)
 
 -- the errors that may be returned by the usecase
 data Err
@@ -74,7 +74,7 @@ checkEmail Nothing = Nothing
 checkEmail (Just _) = Just MalformedEmail
 
 checkNoCollidingEmail ::
-  (MonadThrow m, Exception Err) => UC.GetUserByEmail m -> Text -> m (Maybe ValidationErr)
+  (MonadThrow m, Exception Err) => UC.GetUserByEmail m -> D.Email -> m (Maybe ValidationErr)
 checkNoCollidingEmail getUserByEmail email = do
   mayUser <- getUserByEmail email
   case mayUser of
@@ -83,7 +83,7 @@ checkNoCollidingEmail getUserByEmail email = do
     Right (Just _) -> pure $ Just EmailConflict
 
 checkNoCollidingName ::
-  (MonadThrow m, Exception Err) => UC.GetUserByName m -> Text -> m (Maybe ValidationErr)
+  (MonadThrow m, Exception Err) => UC.GetUserByName m -> D.Name -> m (Maybe ValidationErr)
 checkNoCollidingName getUserByName name = do
   mayUser <- getUserByName name
   case mayUser of
@@ -96,7 +96,7 @@ checkValidation mayVE = case catMaybes mayVE of
   [] -> pure ()
   errs -> throwM (ErrValidation errs)
 
-insertUser :: (MonadThrow m, Exception Err) => UC.InsertUserPswd m -> D.User -> Text -> m ()
+insertUser :: (MonadThrow m, Exception Err) => UC.InsertUserPswd m -> D.User -> D.Password -> m ()
 insertUser insert user pswd = do
   res <- insert user pswd
   case res of

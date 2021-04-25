@@ -19,7 +19,7 @@ uc = UC.login (\t -> pure $ "hashed-" <> t) UserRepo.getUserByEmailAndHashedPass
 loginUser :: State -> UC.Login IO
 loginUser state = run state . uc
 
-insertUserPswd_ :: D.User -> Text -> IO State
+insertUserPswd_ :: D.User -> D.Password -> IO State
 insertUserPswd_ user password = do
   state <- emptyState
   Nothing <- run state $ UserRepo.insertUserPswd user password
@@ -27,23 +27,24 @@ insertUserPswd_ user password = do
 
 spec :: Spec
 spec = do
-  let userEmail = "userEmail"
-      userPassword = "userPassword" :: Text
-      myUser = D.User fakeUUID1 "userName" userEmail
+  let userEmail = D.Email "userEmail"
+      userPassword = D.Password "userPassword"
+      userName = D.Name "userName"
+      myUser = D.User fakeUUID1 userName userEmail
 
   describe "happy case" $
     it "returns an uuid if found" $ do
-      state <- insertUserPswd_ myUser ("hashed-" <> userPassword)
+      state <- insertUserPswd_ myUser (D.Password "hashed-" <> userPassword)
       foundUser <- loginUser state $ D.LoginDetails userEmail userPassword
       foundUser `shouldBe` Right myUser
 
   describe "not found" $
     it "returns a ErrUserNotFound" $ do
       state <- insertUserPswd_ myUser userPassword
-      notFoundUser <- loginUser state $ D.LoginDetails (userEmail <> "oops") userPassword
+      notFoundUser <- loginUser state $ D.LoginDetails (userEmail <> D.Email "oops") userPassword
       notFoundUser `shouldBe` Left UC.UserNotFound -- D.ErrUserNotFound
   describe "not found 2" $
     it "returns a ErrUserNotFound" $ do
       state <- insertUserPswd_ myUser userPassword
-      notFoundUser <- loginUser state $ D.LoginDetails userEmail (userPassword <> "oops")
+      notFoundUser <- loginUser state $ D.LoginDetails userEmail (userPassword <> D.Password "oops")
       notFoundUser `shouldBe` Left UC.UserNotFound --D.ErrUserNotFound

@@ -19,7 +19,7 @@ import RIO hiding (trace)
 import qualified Usecase.Interactor as UC
 
 insertUserPswd :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.InsertUserPswd m
-insertUserPswd c (D.User uid' name' email') password' = do
+insertUserPswd c (D.User uid' (D.Name name') (D.Email email')) (D.Password password') = do
   result <-
     liftIO $
       Session.run (Session.statement (uid', name', email', password') insertUserStmt) c
@@ -41,10 +41,10 @@ getUserByID :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByID m
 getUserByID c id' = findUserStmtRunner (Session.statement id' userByIDStmt) c
 
 getUserByEmail :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByEmail m
-getUserByEmail c email' = findUserStmtRunner (Session.statement email' userByEmailStmt) c
+getUserByEmail c (D.Email email') = findUserStmtRunner (Session.statement email' userByEmailStmt) c
 
 getUserByName :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByName m
-getUserByName c name' = findUserStmtRunner (Session.statement name' userByNameStmt) c
+getUserByName c (D.Name name') = findUserStmtRunner (Session.statement name' userByNameStmt) c
 
 findUserStmtRunner ::
   (MonadIO m, UC.Logger m) =>
@@ -55,7 +55,7 @@ findUserStmtRunner stmt c = do
   result <- liftIO $ Session.run stmt c
   case result of
     Right (Just (uuid, name, email)) ->
-      pure (Right $ Just D.User {D._id = uuid, D._name = name, D._email = email})
+      pure (Right $ Just D.User {D._id = uuid, D._name = D.Name name, D._email = D.Email email})
     Right Nothing -> pure (Right Nothing)
     Left err -> do
       UC.log [D.ErrorMsg err]

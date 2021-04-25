@@ -31,8 +31,8 @@ instance FromJSON a => FromJSON (User a) where
 
 -- UserDetails
 data UserDetails = UserDetails
-  { user_username :: Text,
-    user_email :: Text
+  { user_username :: D.Name,
+    user_email :: D.Email
   }
   deriving (Eq, Show, Generic)
 
@@ -47,9 +47,9 @@ fromDomain user = UserDetails (D._name user) (D._email user)
 
 -- RegisterDetails
 data RegisterDetails = RegisterDetails
-  { register_email :: Text,
-    register_username :: Text,
-    register_password :: Text
+  { register_email :: D.Email,
+    register_username :: D.Name,
+    register_password :: D.Password
   }
   deriving (Eq, Show, Generic)
 
@@ -61,8 +61,8 @@ instance ToJSON RegisterDetails where
 
 -- LoginDetails
 data LoginDetails = LoginDetails
-  { login_email :: Text,
-    login_password :: Text
+  { login_email :: D.Email,
+    login_password :: D.Password
   }
   deriving (Eq, Show, Generic)
 

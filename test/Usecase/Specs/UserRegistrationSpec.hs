@@ -31,10 +31,10 @@ registerUser st name email pswd = run st $ uc name email pswd
 
 spec :: Spec
 spec = do
-  let prevUsr = D.User fakeUUID1 "collidingUserName" "colliding@email.fr"
-      currUsr = D.User fakeUUID2 "currentUserName" "current@email.fr"
-      malformedEmail = "current.email.fr" :: Text
-      pswd = "myPass" :: Text
+  let prevUsr = D.User fakeUUID1 (D.Name "collidingUserName") (D.Email "colliding@email.fr")
+      currUsr = D.User fakeUUID2 (D.Name "currentUserName") (D.Email "current@email.fr")
+      malformedEmail = D.Email "current.email.fr"
+      pswd = D.Password "myPass"
       insertPrev st = run st $ InMem.insertUserPswd prevUsr pswd
 
   before emptyState $ do
