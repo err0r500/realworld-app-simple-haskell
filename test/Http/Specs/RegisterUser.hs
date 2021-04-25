@@ -17,14 +17,27 @@ spec start = do
   let reqPath = "/api/users"
       reqBody =
         [json|
-                      {
-                        "user": {
-                          "username": "matth",
-                          "email": "matth@example.com",
-                          "password": "mypassword"
-                        }
-                      }
-                     |]
+          {
+            "user": {
+              "username": "u",
+              "email": "e",
+              "password": "p"
+            }
+          }
+        |]
+
+  describe "parameter passing check" $ do
+    let allGood =
+          Lib.emptyLogicH
+            { UC._userRegister = \u e p ->
+                if u == "u" && e == "e" && p == "p"
+                  then pure $ Right "myResp"
+                  else pure $ Left UC.ErrTechnical
+            }
+    with (start allGood) $
+      it "responds with 200 with the uuid" $
+        Utils.postSimpleJSON reqPath reqBody
+          `shouldRespondWith` "myResp" {matchStatus = 200}
 
   describe "happycase" $ do
     let allGood = Lib.emptyLogicH {UC._userRegister = \_ _ _ -> pure $ Right "myResp"}

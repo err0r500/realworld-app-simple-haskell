@@ -12,10 +12,10 @@ import qualified Web.Scotty.Trans as ScottyT
 
 registerUser :: MonadIO m => UC.Register m -> ScottyT.ActionT LText m ()
 registerUser uc = do
-  (Lib.User body) <- ScottyT.jsonData
+  (Lib.User b) <- ScottyT.jsonData
   resp <-
     lift $
-      uc (Lib.register_email body) (Lib.register_username body) (Lib.register_password body)
+      uc (Lib.register_username b) (Lib.register_email b) (Lib.register_password b)
   case resp of
     Left (UC.ErrValidation _) -> ScottyT.status status422
     Left UC.ErrTechnical -> ScottyT.status status500

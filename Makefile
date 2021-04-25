@@ -18,4 +18,5 @@ test: start-pg
 	docker stop pg-test
 
 start-pg: 
+	docker stop pg-test || true
 	docker run -d --rm -p 5432:5432 -e POSTGRES_PASSWORD=password --name=pg-test -v $(shell pwd)/scripts/pg.sql:/docker-entrypoint-initdb.d/init.sql postgres
