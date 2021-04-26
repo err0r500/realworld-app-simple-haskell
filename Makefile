@@ -9,7 +9,7 @@ run:
 build-docker:
 	docker build -t haskell-clean-architecture .
 
-run-docker: docker-build
+run-docker: build-docker start-pg
 	docker run --rm -p 3000:3000 haskell-clean-architecture
 
 test: start-pg

@@ -9,8 +9,6 @@ import qualified Usecase.Interactor as UC
 
 type InMemory r m = (DH.Has (TVar Store) r, MonadReader r m, MonadIO m)
 
-type Name = Text
-
 data User = User
   { _id :: !UUID.UUID,
     _name :: !Text,
