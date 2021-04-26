@@ -1,4 +1,4 @@
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Main where
 
@@ -13,6 +13,7 @@ import qualified Adapter.Storage.InMem.User as InMemUserRepo
 import qualified Adapter.UUIDGen as UUIDGen
 import qualified Config.Config as Config
 import qualified Hasql.Connection as Connection
+import qualified Network.Wai
 import qualified Network.Wai.Handler.Warp as Warp
 import RIO
 import qualified RIO.Text as T
@@ -27,31 +28,38 @@ main = do
   putStrLn "== Haskell Clean Architecture =="
 
   -- we pick the HTTP server implementation (scotty or servant) and the port it'll listen on
-  serverName <- Config.getStringFromEnv "SERVER" "servant"
+  serverInstance <- Config.getStringFromEnv "SERVER" "servant"
   port <- Config.getIntFromEnv "PORT" 3000
+  putStrLn $ "starting " ++ serverInstance ++ " server on port " ++ show port
 
-  router <- do
-    -- we "plug" everything, and start the router
-    storageBackend <- Config.getStringFromEnv "STORAGE" "hasql"
-    putStrLn $ "using  " ++ storageBackend ++ " as storage backend"
+  -- we pick the storage backend (hasql or inMem)
+  storageBackend <- Config.getStringFromEnv "STORAGE" "hasql"
+  putStrLn $ "using  " ++ storageBackend ++ " as storage backend"
+
+  router <-
     if storageBackend == "hasql"
       then do
         -- we use the hasql Storage
         connSettings <- hasqlConnectionSettings
         Right conn <- Connection.acquire connSettings
-        pickServer serverName (logicHandler $ hasqlUserRepo conn) runApp
+        buildRouter serverInstance (hasqlUserRepo conn) ()
       else do
         -- we use the inMemory Storage
         inMemStore <- newTVarIO $ InMemUserRepo.Store mempty
-        pickServer serverName (logicHandler inMemUserRepo) $ runAppInMem inMemStore
+        buildRouter serverInstance inMemUserRepo inMemStore
 
-  putStrLn $ "starting " ++ serverName ++ " server on port " ++ show port
+  -- start the router
   Warp.run port router
 
--- we pick a server or another
-pickServer ::
-  (MonadUnliftIO m, MonadIO m, UC.Logger m, MonadThrow m) => String -> SharedHttp.Router m
-pickServer str = if str == "scotty" then ScottyRouter.start else ServantRouter.start
+buildRouter :: UC.Logger (App a) => String -> UC.UserRepo (App a) -> a -> IO Network.Wai.Application
+buildRouter serverInstance a b =
+  pickServer serverInstance (logicHandler a) $ runApp b
+  where
+    pickServer :: MonadThrow m => String -> SharedHttp.Router m
+    pickServer serverInstance =
+      if serverInstance == "scotty"
+        then ScottyRouter.start
+        else ServantRouter.start
 
 -- we partially apply the "adapters" functions to get the pure usecases (shared by both storage backends)
 logicHandler :: (Monad m, UC.Logger m, MonadThrow m, MonadUnliftIO m) => UC.UserRepo m -> UC.LogicHandler m
@@ -69,14 +77,14 @@ logicHandler uRepo =
         (UC._getUserByEmailAndHashedPassword uRepo)
     )
 
+newtype App a b = InMemApp (RIO a b)
+  deriving (Applicative, Functor, Monad, MonadThrow, MonadUnliftIO, MonadReader a, MonadIO)
+
+runApp :: a -> App a b -> IO b
+runApp inMemStore (InMemApp app) = runRIO inMemStore app
+
 -- inMem app
 type InMemStore = TVar InMemUserRepo.Store
-
-newtype InMemApp a = InMemApp (RIO InMemStore a)
-  deriving (Applicative, Functor, Monad, MonadThrow, MonadUnliftIO, MonadReader InMemStore, MonadIO)
-
-runAppInMem :: InMemStore -> InMemApp a -> IO a
-runAppInMem inMemStore (InMemApp app) = runRIO inMemStore app
 
 inMemUserRepo :: InMemUserRepo.InMemory x m => UC.UserRepo m
 inMemUserRepo =
@@ -88,12 +96,6 @@ inMemUserRepo =
     InMemUserRepo.getUserByEmailAndHashedPassword
 
 -- hasql App
-newtype App a = App (RIO () a)
-  deriving (Functor, Applicative, Monad, MonadIO, MonadUnliftIO, MonadThrow)
-
-runApp :: App a -> IO a
-runApp (App app) = runRIO () app
-
 hasqlUserRepo :: (UC.Logger m, MonadThrow m, MonadUnliftIO m) => Connection.Connection -> UC.UserRepo m
 hasqlUserRepo c =
   UC.UserRepo
@@ -115,8 +117,8 @@ hasqlConnectionSettings = do
     bString = T.encodeUtf8 . T.pack
 
 -- logger instances
-instance UC.Logger InMemApp where
+instance UC.Logger (App InMemStore) where
   log = KatipLogger.log
 
-instance UC.Logger App where
+instance UC.Logger (App ()) where
   log = KatipLogger.log
