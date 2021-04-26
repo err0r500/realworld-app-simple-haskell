@@ -36,25 +36,24 @@ main = do
     putStrLn $ "using  " ++ storageBackend ++ " as storage backend"
     if storageBackend == "hasql"
       then do
+        -- we use the hasql Storage
         connSettings <- hasqlConnectionSettings
         Right conn <- Connection.acquire connSettings
         pickServer serverName (logicHandler $ hasqlUserRepo conn) runApp
       else do
-        inMemStore <- freshState -- we use the inMemory Storage
+        -- we use the inMemory Storage
+        inMemStore <- newTVarIO $ InMemUserRepo.Store mempty
         pickServer serverName (logicHandler inMemUserRepo) $ runAppInMem inMemStore
 
   putStrLn $ "starting " ++ serverName ++ " server on port " ++ show port
   Warp.run port router
 
-type InMemStore = TVar InMemUserRepo.Store
+-- we pick a server or another
+pickServer ::
+  (MonadUnliftIO m, MonadIO m, UC.Logger m, MonadThrow m) => String -> SharedHttp.Router m
+pickServer str = if str == "scotty" then ScottyRouter.start else ServantRouter.start
 
-newtype InMemApp a = InMemApp (RIO InMemStore a)
-  deriving (Applicative, Functor, Monad, MonadThrow, MonadUnliftIO, MonadReader InMemStore, MonadIO)
-
-runAppInMem :: InMemStore -> InMemApp a -> IO a
-runAppInMem inMemStore (InMemApp app) = runRIO inMemStore app
-
--- we partially apply the "adapters" functions to get the pure usecases
+-- we partially apply the "adapters" functions to get the pure usecases (shared by both storage backends)
 logicHandler :: (Monad m, UC.Logger m, MonadThrow m, MonadUnliftIO m) => UC.UserRepo m -> UC.LogicHandler m
 logicHandler uRepo =
   UC.LogicHandler
@@ -70,18 +69,14 @@ logicHandler uRepo =
         (UC._getUserByEmailAndHashedPassword uRepo)
     )
 
-freshState :: MonadIO m => m InMemStore
-freshState = newTVarIO $ InMemUserRepo.Store mempty
+-- inMem app
+type InMemStore = TVar InMemUserRepo.Store
 
-pickServer ::
-  (MonadUnliftIO m, MonadIO m, UC.Logger m, MonadThrow m) => String -> SharedHttp.Router m
-pickServer str = if str == "scotty" then ScottyRouter.start else ServantRouter.start
+newtype InMemApp a = InMemApp (RIO InMemStore a)
+  deriving (Applicative, Functor, Monad, MonadThrow, MonadUnliftIO, MonadReader InMemStore, MonadIO)
 
-instance UC.Logger InMemApp where
-  log = KatipLogger.log
-
-instance UC.Logger App where
-  log = KatipLogger.log
+runAppInMem :: InMemStore -> InMemApp a -> IO a
+runAppInMem inMemStore (InMemApp app) = runRIO inMemStore app
 
 inMemUserRepo :: InMemUserRepo.InMemory x m => UC.UserRepo m
 inMemUserRepo =
@@ -92,7 +87,9 @@ inMemUserRepo =
     InMemUserRepo.getUserByName
     InMemUserRepo.getUserByEmailAndHashedPassword
 
-newtype App a = App (RIO () a) deriving (Functor, Applicative, Monad, MonadIO, MonadUnliftIO, MonadThrow)
+-- hasql App
+newtype App a = App (RIO () a)
+  deriving (Functor, Applicative, Monad, MonadIO, MonadUnliftIO, MonadThrow)
 
 runApp :: App a -> IO a
 runApp (App app) = runRIO () app
@@ -116,3 +113,10 @@ hasqlConnectionSettings = do
   pure $ Connection.settings (bString dbHost) (fromIntegral dbPort) (bString dbUser) (bString dbPassword) (bString dbName)
   where
     bString = T.encodeUtf8 . T.pack
+
+-- logger instances
+instance UC.Logger InMemApp where
+  log = KatipLogger.log
+
+instance UC.Logger App where
+  log = KatipLogger.log
