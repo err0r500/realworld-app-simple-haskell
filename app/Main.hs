@@ -62,7 +62,7 @@ buildRouter serverInstance a b =
         else ServantRouter.start
 
 -- we partially apply the "adapters" functions to get the pure usecases (shared by both storage backends)
-logicHandler :: (Monad m, UC.Logger m, MonadThrow m, MonadUnliftIO m) => UC.UserRepo m -> UC.LogicHandler m
+logicHandler :: (Monad m, UC.Logger m, MonadUnliftIO m) => UC.UserRepo m -> UC.LogicHandler m
 logicHandler uRepo =
   UC.LogicHandler
     ( UC.register

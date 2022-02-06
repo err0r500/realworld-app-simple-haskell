@@ -16,7 +16,13 @@ Following the Port & Adapter architecture, the frameworks can be replaced with o
 
 ## start the App
 
+open a shell with all the needed deps (using nix-shell)
 ```
+nix-shell
+```
+
+```
+make start-pg
 make run
 ```
 
@@ -37,3 +43,8 @@ make run-docker
 | DB_USER | `postgres` | String | (hasql): the db user |
 | DB_PASSWORD | `password` | String | (hasql): the db password |
 | DB_NAME | `postgres` | String | (hasql): the db name |
+
+
+```
+curl -v localhost:3000/api/users -d '{"user": {"email": "bla", "username": "bob", "password": "hello"}}' -H 'content-type:application/json'
+```

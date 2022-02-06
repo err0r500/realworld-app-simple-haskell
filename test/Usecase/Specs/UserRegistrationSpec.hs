@@ -49,7 +49,6 @@ spec = do
           insertPrev st
           Left (UC.ErrValidation resp) <- registerUser st (D._name currUsr) (D._email prevUsr) pswd
           resp `shouldBe` [UC.EmailConflict]
-          checkLogs st [UC.EmailConflict]
 
     describe "collision with other user name" $ --
       it "raises an UserNameAlreadyInUse error" $
@@ -57,7 +56,6 @@ spec = do
           insertPrev st
           Left (UC.ErrValidation resp) <- registerUser st (D._name prevUsr) (D._email currUsr) pswd
           resp `shouldBe` [UC.NameConflict]
-          checkLogs st [UC.NameConflict]
 
     describe "collision with other user name & other user email" $
       it "raises UserNameAlreadyInUse & UserEmailAlreadyInUse errors" $
@@ -65,10 +63,8 @@ spec = do
           insertPrev st
           Left (UC.ErrValidation resp) <- registerUser st (D._name prevUsr) (D._email prevUsr) pswd
           resp `shouldMatchList` [UC.NameConflict, UC.EmailConflict]
-          checkLogs st [UC.NameConflict, UC.EmailConflict]
 
     describe "malformed email" $
       it "raises an MalformedEmail error" $ \st -> do
         Left (UC.ErrValidation resp) <- registerUser st (D._name currUsr) malformedEmail pswd
         resp `shouldMatchList` [UC.MalformedEmail]
-        checkLogs st [UC.MalformedEmail]

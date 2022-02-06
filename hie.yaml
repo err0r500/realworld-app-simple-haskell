@@ -1,0 +1,13 @@
+cradle:
+  cabal:
+    - path: "src"
+      component: "lib:haskell-clean-architecture"
+
+    - path: "app/Main.hs"
+      component: "haskell-clean-architecture:exe:haskell-clean-architecture-exe"
+
+    - path: "app/Paths_haskell_clean_architecture.hs"
+      component: "haskell-clean-architecture:exe:haskell-clean-architecture-exe"
+
+    - path: "test"
+      component: "haskell-clean-architecture:test:haskell-clean-architecture-test"

@@ -1,27 +1,31 @@
-let                                
-   stable = import (builtins.fetchTarball {                                
-      name = "nixos-20.09";                                
-      url = "https://github.com/NixOS/nixpkgs/archive/20.09.tar.gz";                                
-      sha256 = "1wg61h4gndm3vcprdcg7rc4s1v3jkm5xd7lw8r2f67w502y94gcy";                                
-   }) {};                                
-  unstable = import (builtins.fetchTarball https://nixos.org/channels/nixos-unstable/nixexprs.tar.xz) { };
-  in                                
-  stable.mkShell {                                
-    buildInputs =                                
-       [ 
-         unstable.cabal-install
-         unstable.hpack
-         unstable.ghc
-         unstable.haskell-language-server
-         unstable.haskellPackages.hspec-discover
-         unstable.haskellPackages.ormolu
+let
+   stable = import (builtins.fetchTarball {
+      name = "nixos-21.11";
+      url = "https://github.com/NixOS/nixpkgs/archive/21.11.tar.gz";
+      sha256 = "162dywda2dvfj1248afxc45kcrg83appjd0nmdb541hl7rnncf02";
+   }) {};
+  in
+  stable.mkShell {
+    buildInputs =
+       [
+         stable.cabal-install
+         stable.hpack
+         (stable.haskell.packages.ghc8107.ghcWithPackages (p: [
+           p.zlib
+           p.postgresql-libpq
+         ]))
+
+         stable.haskell-language-server
+         stable.haskellPackages.hspec-discover
+         stable.haskellPackages.ormolu
 
          stable.libdeflate
          stable.fzf
-         stable.zlib
+         stable.zlib.dev
+         stable.zlib-ng
          stable.libpqxx
-         stable.postgresql
-     ];                                
-  }      
+         stable.postgresql_9_6
+     ];
+  }
 
 
