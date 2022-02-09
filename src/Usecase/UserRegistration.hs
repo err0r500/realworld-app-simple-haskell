@@ -16,13 +16,11 @@ import qualified Usecase.Interactor as UC
 -- the pure logic usecase signature
 type Register m = Monad m => D.Name -> D.Email -> D.Password -> m (Either Err Text)
 
--- the errors that may be rocList diagnostics
 data Err
   = ErrTechnical
   | ErrValidation [ValidationErr]
   deriving (Show, Eq)
 
--- specific validation errors
 data ValidationErr
   = EmailConflict
   | NameConflict
@@ -38,7 +36,6 @@ instance Semigroup Err where
 instance Monoid Err where
   mempty = ErrValidation []
 
--- the usecase
 register ::
   Monad m =>
   UC.GenUUID m ->
@@ -51,7 +48,7 @@ register genUUID checkEmailFormat getUserByEmail getUserByName insertUserPswd na
   runExceptT $
     do
       _ <- ExceptT validateInputs
-      uuid <- ExceptT $ fmap Right genUUID
+      uuid <- ExceptT $ Right <$> genUUID
       _ <- ExceptT $ storeUser uuid
       pure $ UUID.toText uuid
   where
@@ -74,7 +71,7 @@ handleMaybe v may = case may of
   Nothing -> Nothing
   (Just _) -> Just $ ErrValidation [v]
 
-handleEither :: ValidationErr -> Either a1 (Maybe a2) -> Maybe Err
+handleEither :: ValidationErr -> Either a (Maybe b) -> Maybe Err
 handleEither v e = case e of
   Right Nothing -> Nothing
   Right (Just _) -> Just (ErrValidation [v])

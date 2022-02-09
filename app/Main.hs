@@ -39,12 +39,10 @@ main = do
   router <-
     if storageBackend == "hasql"
       then do
-        -- we use the hasql Storage
         connSettings <- hasqlConnectionSettings
         Right conn <- Connection.acquire connSettings
         buildRouter serverInstance (hasqlUserRepo conn) ()
       else do
-        -- we use the inMemory Storage
         inMemStore <- newTVarIO $ InMemUserRepo.Store mempty
         buildRouter serverInstance inMemUserRepo inMemStore
 
@@ -117,8 +115,5 @@ hasqlConnectionSettings = do
     bString = T.encodeUtf8 . T.pack
 
 -- logger instances
-instance UC.Logger (App InMemStore) where
-  log = KatipLogger.log
-
-instance UC.Logger (App ()) where
+instance UC.Logger (App a) where
   log = KatipLogger.log
