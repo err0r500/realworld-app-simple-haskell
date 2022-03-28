@@ -37,12 +37,12 @@ main = do
   putStrLn $ "using  " ++ storageBackend ++ " as storage backend"
 
   router <-
-    if storageBackend == "hasql"
-      then do
+    case storageBackend of
+      "hasql" -> do
         connSettings <- hasqlConnectionSettings
         Right conn <- Connection.acquire connSettings
         buildRouter serverInstance (hasqlUserRepo conn) ()
-      else do
+      _ -> do
         inMemStore <- newTVarIO $ InMemUserRepo.Store mempty
         buildRouter serverInstance inMemUserRepo inMemStore
 
@@ -55,9 +55,9 @@ buildRouter serverInstance a b =
   where
     pickServer :: MonadThrow m => String -> SharedHttp.Router m
     pickServer serverInstance =
-      if serverInstance == "scotty"
-        then ScottyRouter.start
-        else ServantRouter.start
+      case serverInstance of
+        "scotty" -> ScottyRouter.start
+        _ -> ServantRouter.start
 
 -- we partially apply the "adapters" functions to get the pure usecases (shared by both storage backends)
 logicHandler :: (Monad m, UC.Logger m, MonadUnliftIO m) => UC.UserRepo m -> UC.LogicHandler m

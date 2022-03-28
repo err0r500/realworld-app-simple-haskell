@@ -11,10 +11,10 @@ import Utils
 appToIO :: Lib.Logs -> Lib.App a -> IO a
 appToIO logs x = liftIO $ Lib.run logs x
 
-resetAndGetLogs :: Lib.ResetFunc Lib.App -> IO Lib.Logs
-resetAndGetLogs reset = do
+resetAndGetLogs :: IO Lib.Logs
+resetAndGetLogs = do
   logs <- Lib.emptyLogs
-  appToIO logs $ reset ()
+  --appToIO logs $ reset ()
   return logs
 
 spec :: UC.UserRepo Lib.App -> Lib.ResetFunc Lib.App -> Spec
@@ -24,7 +24,7 @@ spec r reset = do
       emptyPassword = D.Password ""
       otherUser = D.User fakeUUID2 (D.Name "other") (D.Email "other@example.com")
 
-  before (resetAndGetLogs reset) $ do
+  before (resetAndGetLogs) $ do
     -- Get User
     describe "find user by ID" $
       it "succeeds" $ \logs -> do
@@ -51,7 +51,6 @@ spec r reset = do
         result `shouldBe` Just user
 
     -- Insert User
-    -- flaky test ! it depends on a schema detail...
     describe "invalid user (empty email)" $
       it "fails" $ \logs -> do
         result <- appToIO logs $ UC._insertUserPswd r (otherUser {D._email = D.Email ""}) emptyPassword

@@ -62,13 +62,15 @@ tests:
   haskell-clean-architecture-test:
     main:                Spec.hs
     source-dirs:         test
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
+      #    ghc-options:
+      #      - -threaded
+      #      - -rtsopts
+      #      - -with-rtsopts=-N
     dependencies:
       - hspec-discover
       - hspec
       - hspec-wai
       - hspec-wai-json
+      - testcontainers
       - haskell-clean-architecture
+      - text
