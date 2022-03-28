@@ -73,4 +73,5 @@ tests:
       - hspec-wai-json
       - testcontainers
       - haskell-clean-architecture
+      - directory
       - text

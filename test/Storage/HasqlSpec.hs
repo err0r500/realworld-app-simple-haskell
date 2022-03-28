@@ -1,69 +1,70 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Storage.HasqlSpec where
 
 import qualified Adapter.Fake.Logger as Logger
 import qualified Adapter.Storage.Hasql.User as Storage
+import Control.Exception
+import Data.Text (pack)
 import Data.Text.Lazy (isInfixOf)
 import qualified Domain.User as D
 import qualified Hasql.Connection as Connection
 import RIO
 import qualified Storage.Lib as Lib
 import qualified Storage.Specs.User as User
+import System.Directory (getCurrentDirectory)
 import System.IO
 import Test.Hspec
 import qualified TestContainers.Hspec as TC
 import qualified Usecase.Interactor as UC
 import Utils
 
-type PostgresPort = Int
+data TestException = PgConnectionFailed
+  deriving (Show, Typeable)
 
-pgPassword :: Text
-pgPassword = "pg_password"
+instance Exception TestException
 
-setupPostgres :: TC.MonadDocker m => m PostgresPort
+setupPostgres :: TC.MonadDocker m => m Connection.Connection
 setupPostgres = do
-  postgresql <-
+  let pgPassword = "pg_password"
+
+  currDir <- liftIO getCurrentDirectory
+
+  pgContainer <-
     TC.run $
       TC.containerRequest (TC.fromTag "postgres:14")
         TC.& TC.setExpose [5432]
         TC.& TC.setEnv [("POSTGRES_PASSWORD", pgPassword)]
-        TC.& TC.setVolumeMounts [("/home/matth/projects/perso/realworld-app-simple-haskell/scripts/pg.sql", "/docker-entrypoint-initdb.d/init.sql")]
-        TC.& TC.setWaitingFor (TC.waitForLogLine TC.Stdout ("database system is ready to accept connections" `isInfixOf`))
+        TC.& TC.setVolumeMounts [(pack currDir <> "/scripts/pg.sql", "/docker-entrypoint-initdb.d/init.sql")]
+        TC.& TC.setWaitingFor (TC.waitForLogLine TC.Stdout ("PostgreSQL init process complete; ready for start up." `isInfixOf`))
 
-  pure $ TC.containerPort postgresql 5432
+  conn <-
+    liftIO $
+      Connection.acquire $
+        Connection.settings
+          "localhost"
+          (fromIntegral $ TC.containerPort pgContainer 5432)
+          "postgres"
+          (encodeUtf8 pgPassword)
+          "postgres"
 
-connSettings :: PostgresPort -> Connection.Settings
-connSettings port = Connection.settings "localhost" 49499 "postgres" "pg_password" "postgres"
+  case conn of
+    Right c -> pure c
+    Left e -> do
+      liftIO $ print e
+      throwM PgConnectionFailed
 
-resetFunc :: Connection.Connection -> Lib.ResetFunc Lib.App
-resetFunc = Storage.truncateTable
-
-userRW :: Connection.Connection -> UC.UserRepo Lib.App
-userRW c =
-  UC.UserRepo
-    (Storage.insertUserPswd c)
-    (Storage.getUserByID c)
-    (Storage.getUserByEmail c)
-    (Storage.getUserByName c)
-    undefined
-
-appToIO :: Lib.Logs -> Lib.App a -> IO a
-appToIO logs x = liftIO $ Lib.run logs x
-
-resetAndGetLogs :: IO Lib.Logs
-resetAndGetLogs = do
+reset :: Connection.Connection -> IO (UC.UserRepo Lib.App, Connection.Connection, Lib.Logs)
+reset conn = do
   logs <- Lib.emptyLogs
-  -- appToIO logs $ reset ()
-  return logs
-
-reset :: PostgresPort -> IO (UC.UserRepo Lib.App, Connection.Connection, Lib.Logs)
-reset pgIp = do
-  Right conn <- liftIO $ Connection.acquire $ connSettings pgIp
-  logs <- resetAndGetLogs
-  pure (userRW conn, conn, logs)
-
-startPostgresContainer = TC.withContainers setupPostgres
+  pure (userRepo conn, conn, logs)
+  where
+    userRepo :: Connection.Connection -> UC.UserRepo Lib.App
+    userRepo c =
+      UC.UserRepo
+        (Storage.insertUserPswd c)
+        (Storage.getUserByID c)
+        (Storage.getUserByEmail c)
+        (Storage.getUserByName c)
+        undefined
 
 spec :: Spec
 spec =
@@ -71,57 +72,12 @@ spec =
       user = D.User uid (D.Name "matth") (D.Email "matth@example.com")
       emptyPassword = D.Password ""
       otherUser = D.User fakeUUID2 (D.Name "other") (D.Email "other@example.com")
+      startPostgresContainer = TC.withContainers setupPostgres
    in aroundAll startPostgresContainer $
-        beforeWith reset $ do
+        beforeWith reset $
           it "succeeds" $ \(repo, conn, logs) -> do
-            Right result <- appToIO logs $ do
+            Right result <- Lib.run logs $ do
               Nothing <- UC._insertUserPswd repo user emptyPassword
               Nothing <- UC._insertUserPswd repo otherUser emptyPassword
               UC._getUserByID repo uid
             result `shouldBe` Just user
-
---spec :: Spec
---spec =
---  aroundAll ar $ do
---    let x = 3
---    beforeWith beforeWithFn $ do
---      it "first test" $ \(a, b) ->
---        do
---          putStrLn $ show $ a + x
---          putStrLn b
---          2 `shouldBe` 2
---
-
---do
---  Right result <- appToIO logs $ do
---    Nothing <- UC._insertUserPswd r user emptyPassword
---    Nothing <- UC._insertUserPswd r otherUser emptyPassword
---    UC._getUserByID r uid
-
---do
---  r <- getRepo pgIp
---  Nothing <- UC._insertUserPswd r user emptyPassword
---  () `shouldNotBe` ()
-
---spec :: Spec
---spec =
---  around (TC.withContainers setupPostgres) $
---    describe "User" $
---    describe "find user by ID" $
---      it "succeeds" $ \dbIP -> do
---        Right result <- appToIO logs $ do
---          Nothing <- UC._insertUserPswd r user emptyPassword
---          Nothing <- UC._insertUserPswd r otherUser emptyPassword
---          UC._getUserByID r uid
---        result `shouldBe` Just user
---c <- runIO $ do
---  Right conn <- Connection.acquire $ connSettings (TC.containerIp container)
---  pure conn
---      User.spec2 -- (userRW c) (resetFunc c)
-
---do
---  -- \pgIP ->
---  c <- runIO $ do
---    Right conn <- Connection.acquire $ connSettings "hello"
---    pure conn
---  User.spec (userRW c) (resetFunc c)
