@@ -75,3 +75,5 @@ tests:
       - haskell-clean-architecture
       - directory
       - text
+      - hasql
+      - hasql-th
