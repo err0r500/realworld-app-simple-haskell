@@ -1,8 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
-{-# HLINT ignore "Redundant bracket" #-}
 
 module Adapter.Storage.Hasql.User where
 
@@ -11,16 +8,20 @@ import qualified Domain.Messages as D
 import qualified Domain.User as D
 import qualified Hasql.Connection as HConn
 import qualified Hasql.Session as Session
+import Hasql.Statement (Statement)
 import qualified Hasql.TH as TH
 import qualified PostgreSQL.ErrorCodes as PgErr
 import RIO hiding (trace)
 import qualified Usecase.Interactor as UC
 
+execQuery :: MonadIO m => HConn.Connection -> a -> Statement a b -> m (Either Session.QueryError b)
+execQuery conn param stmt = liftIO $ Session.run (Session.statement param stmt) conn
+
 insertUserPswd :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.InsertUserPswd m
-insertUserPswd c (D.User uid' (D.Name name') (D.Email email')) (D.Password password') = do
-  result <- liftIO $ Session.run (Session.statement (uid', name', email', password') insertUserStmt) c
+insertUserPswd conn user password = do
+  result <- execQuery conn (getQueryFields user password) insertUserStmt
   case result of
-    -- ugly pattern matching
+    Right _ -> pure Nothing
     Left (Session.QueryError _ _ (Session.ResultError (Session.ServerError code e _ _))) ->
       if code == PgErr.unique_violation
         then do
@@ -28,10 +29,11 @@ insertUserPswd c (D.User uid' (D.Name name') (D.Email email')) (D.Password passw
           pure $ Just (UC.SpecificErr UC.InsertUserConflict)
         else handleErr e
     Left e -> handleErr e
-    Right _ -> pure Nothing
   where
+    getQueryFields :: D.User -> D.Password -> (UUID.UUID, Text, Text, Text)
+    getQueryFields (D.User uid' (D.Name name') (D.Email email')) (D.Password password') = (uid', name', email', password')
     insertUserStmt =
-      [TH.resultlessStatement|
+      [TH.rowsAffectedStatement|
                       insert into "users" (uid, name, email, password)
                       values ($1::uuid, $2::text, $3::text, $4::text)
                       |]
@@ -40,7 +42,7 @@ insertUserPswd c (D.User uid' (D.Name name') (D.Email email')) (D.Password passw
       pure $ Just UC.AnyErr
 
 getUserByID :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByID m
-getUserByID c id' = sharedGetUserBy (Session.statement id' userByIDStmt) c
+getUserByID c id' = sharedGetUserBy c id' userByIDStmt
   where
     userByIDStmt =
       [TH.maybeStatement|
@@ -50,7 +52,7 @@ getUserByID c id' = sharedGetUserBy (Session.statement id' userByIDStmt) c
             |]
 
 getUserByEmail :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByEmail m
-getUserByEmail c (D.Email email') = sharedGetUserBy (Session.statement email' userByEmailStmt) c
+getUserByEmail c (D.Email email') = sharedGetUserBy c email' userByEmailStmt
   where
     userByEmailStmt =
       [TH.maybeStatement|
@@ -60,7 +62,7 @@ getUserByEmail c (D.Email email') = sharedGetUserBy (Session.statement email' us
         |]
 
 getUserByName :: (MonadIO m, UC.Logger m) => HConn.Connection -> UC.GetUserByName m
-getUserByName c (D.Name name') = sharedGetUserBy (Session.statement name' userByNameStmt) c
+getUserByName c (D.Name name') = sharedGetUserBy c name' userByNameStmt
   where
     userByNameStmt =
       [TH.maybeStatement|
@@ -71,15 +73,16 @@ getUserByName c (D.Name name') = sharedGetUserBy (Session.statement name' userBy
 
 sharedGetUserBy ::
   (MonadIO m, UC.Logger m) =>
-  Session.Session (Maybe (UUID.UUID, Text, Text)) ->
   HConn.Connection ->
-  m (Either (UC.TechErrOnly) (Maybe D.User))
-sharedGetUserBy stmt c = do
-  result <- liftIO $ Session.run stmt c
+  a ->
+  Statement a (Maybe (UUID.UUID, Text, Text)) ->
+  m (Either UC.TechErrOnly (Maybe D.User))
+sharedGetUserBy conn param stmt = do
+  result <- execQuery conn param stmt
   case result of
     Right (Just (uuid, name, email)) ->
-      pure (Right $ Just $ D.User uuid (D.Name name) (D.Email email))
-    Right Nothing -> pure (Right Nothing)
+      pure $ Right . Just $ D.User uuid (D.Name name) (D.Email email)
+    Right Nothing -> pure $ Right Nothing
     Left err -> do
       UC.log [D.ErrorMsg err]
-      pure (Left UC.AnyErr)
+      pure $ Left UC.AnyErr
