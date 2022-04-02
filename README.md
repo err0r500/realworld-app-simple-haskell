@@ -48,3 +48,4 @@ make run-docker
 ```
 curl -v localhost:3000/api/users -d '{"user": {"email": "bla", "username": "bob", "password": "hello"}}' -H 'content-type:application/json'
 ```
+

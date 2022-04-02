@@ -1,6 +1,7 @@
 module Utils where
 
 import qualified Data.UUID as UUID
+import qualified Domain.User as D
 import RIO
 
 -- used for tests

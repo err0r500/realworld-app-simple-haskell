@@ -1,0 +1,17 @@
+resolver:
+  url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/18/24.yaml
+
+packages:
+  - .
+
+extra-deps:
+  - postgresql-error-codes-1.0.1@sha256:34ce40401dc21762996dadd38336436f40a09da95ad3309ba6dc506d707cff11,1413
+  - hasql-th-0.4.0.8@sha256:e77af01c354fcebb0fc8358a4bb2f7b361329bce28f783d8d6b17fbd5fa43279,2245
+  - postgresql-syntax-0.3.0.3@sha256:b93a73c388811e331327561d85ed268f232be6c7f8f90ff27b2091c64c6aea90,4170
+  - fast-builder-0.1.2.1@sha256:6e3148d9ac21e5ec900fa59d1d65322e6b4c0491f19b53bdbe093186a519eb9f,2791
+  - headed-megaparsec-0.2@sha256:53e0fca4b30bc568f0dfae5b97abe7967939c8a9ee00f30bc99936d75181dd72,1566
+  - testcontainers-0.3.1.0@sha256:8f9c100652403b72a467eb005b1c936c7116e02938057bd5b6fd7cdc465b9532,2700
+
+    #nix:
+    #  enable: true
+    #  packages: [pcre, postgresql]

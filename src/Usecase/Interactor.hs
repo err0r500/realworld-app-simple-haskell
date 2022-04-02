@@ -19,6 +19,8 @@ data Err a
   | SpecificErr a -- usecase want to know about theses errors when they happen
   deriving (Show, Eq)
 
+type TechErrOnly = Err Void
+
 data ErrInsertUser = InsertUserConflict
   deriving (Show, Eq)
 
