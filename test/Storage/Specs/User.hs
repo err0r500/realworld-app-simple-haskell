@@ -16,10 +16,10 @@ import Usecase.Interactor (Err (AnyErr))
 import qualified Usecase.Interactor as UC
 import Utils
 
+-- todo : check the logs
 getUserSpec =
-  beforeWith Lib.resetDbAndLogs $ do
-    -- all functions are expected to shared the same behavior
-    -- todo : check the logs
+  beforeWith Lib.resetDbAndFlushLogs $ do
+    -- all the functions  below are expected to shared the same behavior
     describe "getUserByID" $
       runTests (UC._getUserByID, D._id user)
     describe "getUserByName" $
@@ -52,15 +52,51 @@ getUserSpec =
         pure ()
 
 insertUserSpec =
-  beforeWith Lib.resetDbAndLogs $ do
-    describe "invalid user" $ do
-      it "fails on empty name" $ \(repo, conn, logs) -> do
+  beforeWith Lib.resetDbAndFlushLogs $ do
+    describe "insertUser" $ do
+      it "succeeds for a valid user" $ \(repo, conn, logs) -> do
+        result <- Lib.run logs $ do
+          UC._insertUserPswd repo user (D.Password "password")
+        result `shouldBe` Nothing
+
+      it "succeeds for a user with a password" $ \(repo, conn, logs) -> do
+        result <- Lib.run logs $ do
+          UC._insertUserPswd repo user emptyPassword
+        result `shouldBe` Nothing
+
+      it "succeeds on password collision" $ \(repo, conn, logs) -> do
+        result <- Lib.run logs $ do
+          let password = D.Password "password"
+          Nothing <- UC._insertUserPswd repo user password
+          UC._insertUserPswd repo otherUser password
+        result `shouldBe` Nothing
+
+      it "fails if the user has no name" $ \(repo, conn, logs) -> do
         result <- Lib.run logs $ UC._insertUserPswd repo (user {D._name = D.Name ""}) emptyPassword
         result `shouldBe` Just UC.AnyErr
 
-      it "fails on empty email" $ \(repo, conn, logs) -> do
+      it "fails if the user has no email" $ \(repo, conn, logs) -> do
         result <- Lib.run logs $ UC._insertUserPswd repo (user {D._email = D.Email ""}) emptyPassword
         result `shouldBe` Just UC.AnyErr
+
+      it "fails with conflict on id collision" $
+        \(repo, conn, logs) -> do
+          result <- Lib.run logs $ do
+            Nothing <- UC._insertUserPswd repo user emptyPassword
+            UC._insertUserPswd repo (otherUser {D._id = userUUID}) emptyPassword
+          result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)
+
+      it "fails with conflict on name collision" $ \(repo, conn, logs) -> do
+        result <- Lib.run logs $ do
+          Nothing <- UC._insertUserPswd repo user emptyPassword
+          UC._insertUserPswd repo (otherUser {D._name = D._name user}) emptyPassword
+        result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)
+
+      it "fails with conflict on email collision" $ \(repo, conn, logs) -> do
+        result <- Lib.run logs $ do
+          Nothing <- UC._insertUserPswd repo user emptyPassword
+          UC._insertUserPswd repo (otherUser {D._email = D._email user}) emptyPassword
+        result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)
 
 -- helpers
 dropColumnStmt :: HS.Statement () ()
@@ -70,50 +106,3 @@ dropColumnStmt =
 restoreColumnStmt :: HS.Statement () ()
 restoreColumnStmt =
   HS.Statement "ALTER TABLE users ADD COLUMN uid UUID NOT NULL UNIQUE" HE.noParams HD.noResult True
-
---spec :: UC.UserRepo Lib.App -> Lib.ResetFunc Lib.App -> Spec
---spec r reset = do
---  let uid = fakeUUID1
---      user = D.User uid (D.Name "matth") (D.Email "matth@example.com")
---      emptyPassword = D.Password ""
---      otherUser = D.User fakeUUID2 (D.Name "other") (D.Email "other@example.com")
---
---  before (resetAndGetLogs) $ do
---    -- Insert User
---    describe "invalid user (empty email)" $
---      it "fails" $ \logs -> do
---        result <- appToIO logs $ UC._insertUserPswd r (otherUser {D._email = D.Email ""}) emptyPassword
---        result `shouldBe` Just UC.AnyErr
---
---    describe "invalid user (empty name)" $
---      it "fails" $ \logs -> do
---        result <- appToIO logs $ UC._insertUserPswd r (otherUser {D._name = D.Name ""}) emptyPassword
---        result `shouldBe` Just UC.AnyErr
---
---    describe "2 different users" $
---      it "succeeds" $ \logs -> do
---        result <- appToIO logs $ do
---          Nothing <- UC._insertUserPswd r user emptyPassword
---          UC._insertUserPswd r otherUser emptyPassword
---        result `shouldBe` Nothing
---
---    describe "2 users with same id" $
---      it "fails" $ \logs -> do
---        result <- appToIO logs $ do
---          Nothing <- UC._insertUserPswd r user emptyPassword
---          UC._insertUserPswd r (otherUser {D._id = uid}) emptyPassword
---        result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)
---
---    describe "2 users with same name" $
---      it "fails" $ \logs -> do
---        result <- appToIO logs $ do
---          Nothing <- UC._insertUserPswd r user emptyPassword
---          UC._insertUserPswd r (otherUser {D._name = D._name user}) emptyPassword
---        result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)
---
---    describe "2 users with same email" $
---      it "fails" $ \logs -> do
---        result <- appToIO logs $ do
---          Nothing <- UC._insertUserPswd r user emptyPassword
---          UC._insertUserPswd r (otherUser {D._email = D._email user}) emptyPassword
---        result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)

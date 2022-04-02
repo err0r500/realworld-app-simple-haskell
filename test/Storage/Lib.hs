@@ -34,9 +34,6 @@ instance MonadFail App where
 instance UC.Logger App where
   log = Logger.log
 
-emptyLogs :: IO Logs
-emptyLogs = newTVarIO $ Logger.Logs []
-
 run :: Logs -> App a -> IO a
 run logs (App app) = runRIO logs app
 
@@ -77,12 +74,13 @@ startAndConnectPostgres = do
     Right c -> pure c
     Left e -> throwM $ PgConnectionFailed e
 
-resetDbAndLogs :: HConn.Connection -> IO (UC.UserRepo App, HConn.Connection, Logs)
-resetDbAndLogs conn = do
+resetDbAndFlushLogs :: HConn.Connection -> IO (UC.UserRepo App, HConn.Connection, Logs)
+resetDbAndFlushLogs conn = do
   logs <- emptyLogs
   truncateTable conn
   pure (userRepo conn, conn, logs)
   where
+    emptyLogs = newTVarIO $ Logger.Logs []
     userRepo :: HConn.Connection -> UC.UserRepo App
     userRepo c =
       UC.UserRepo
