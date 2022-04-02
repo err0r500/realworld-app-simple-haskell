@@ -1,7 +1,9 @@
-module Storage.Specs.User where
+module Storage.Specs.User (getUserSpec, insertUserSpec) where
 
+import Adapter.Fake.Logger (getLogs)
 import Data.Text.Array (empty)
 import qualified Data.UUID as UUID
+import qualified Domain.Messages as D
 import qualified Domain.User as D
 import qualified Hasql.Decoders as HD
 import qualified Hasql.Encoders as HE
@@ -19,7 +21,8 @@ import Utils
 -- todo : check the logs
 getUserSpec =
   beforeWith Lib.resetDbAndFlushLogs $ do
-    -- all the functions  below are expected to shared the same behavior
+    -- all the functions below are expected to share the same behavior :
+    -- get the user, but from different fields
     describe "getUserByID" $
       runTests (UC._getUserByID, D._id user)
     describe "getUserByName" $
@@ -74,10 +77,14 @@ insertUserSpec =
       it "fails if the user has no name" $ \(repo, conn, logs) -> do
         result <- Lib.run logs $ UC._insertUserPswd repo (user {D._name = D.Name ""}) emptyPassword
         result `shouldBe` Just UC.AnyErr
+        ll <- readTVarIO logs
+        length ll `shouldBe` 1
 
       it "fails if the user has no email" $ \(repo, conn, logs) -> do
         result <- Lib.run logs $ UC._insertUserPswd repo (user {D._email = D.Email ""}) emptyPassword
         result `shouldBe` Just UC.AnyErr
+        ll <- readTVarIO logs
+        length ll `shouldBe` 1
 
       it "fails with conflict on id collision" $
         \(repo, conn, logs) -> do
@@ -85,18 +92,31 @@ insertUserSpec =
             Nothing <- UC._insertUserPswd repo user emptyPassword
             UC._insertUserPswd repo (otherUser {D._id = userUUID}) emptyPassword
           result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)
+          ll <- readTVarIO logs
+          length ll `shouldBe` 1
 
       it "fails with conflict on name collision" $ \(repo, conn, logs) -> do
         result <- Lib.run logs $ do
           Nothing <- UC._insertUserPswd repo user emptyPassword
           UC._insertUserPswd repo (otherUser {D._name = D._name user}) emptyPassword
         result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)
+        ll <- readTVarIO logs
+        length ll `shouldBe` 1
 
       it "fails with conflict on email collision" $ \(repo, conn, logs) -> do
         result <- Lib.run logs $ do
           Nothing <- UC._insertUserPswd repo user emptyPassword
           UC._insertUserPswd repo (otherUser {D._email = D._email user}) emptyPassword
         result `shouldBe` Just (UC.SpecificErr UC.InsertUserConflict)
+        ll <- readTVarIO logs
+        length ll `shouldBe` 1
+
+--shouldContainAnError :: [D.Message a] -> Bool
+--shouldContainAnError = any isError
+--  where
+--    isError m = case m of
+--      D.ErrorMsg _ -> True
+--      _ -> False
 
 -- helpers
 dropColumnStmt :: HS.Statement () ()

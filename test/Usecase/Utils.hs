@@ -12,7 +12,7 @@ import Utils
 emptyState :: (MonadIO m) => m State
 emptyState = do
   state <- newTVarIO $ UserRepo.Store mempty
-  logger <- newTVarIO $ Logger.Logs []
+  logger <- newTVarIO []
   uuid <- newTVarIO $ GenUUID.UUIDGen fakeUUID1
   return (state, logger)
 

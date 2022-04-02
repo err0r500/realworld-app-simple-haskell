@@ -26,8 +26,8 @@ uc =
     InMem.getUserByName
     InMem.insertUserPswd
 
-registerUser :: State -> UC.Register IO
-registerUser st name email pswd = run st $ uc name email pswd
+registerUser :: MonadIO m => State -> UC.Register m
+registerUser st name email pswd = liftIO $ run st $ uc name email pswd
 
 spec :: Spec
 spec = do

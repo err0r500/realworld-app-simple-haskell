@@ -39,13 +39,18 @@ default-extensions:
   - ConstraintKinds
   - FlexibleContexts
   - GeneralizedNewtypeDeriving
-  - RankNTypes
+  - Rank2Types
   - MonoLocalBinds
 
 library:
   source-dirs: src
   ghc-options:
     - -Wall
+    - -Wcompat
+    - -Widentities
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    - -Wpartial-fields
 
 executables:
   haskell-clean-architecture-exe:
@@ -62,10 +67,10 @@ tests:
   haskell-clean-architecture-test:
     main:                Spec.hs
     source-dirs:         test
-      #    ghc-options:
-      #      - -threaded
-      #      - -rtsopts
-      #      - -with-rtsopts=-N
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
       - hspec-discover
       - hspec

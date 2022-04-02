@@ -13,7 +13,7 @@ import qualified Usecase.LogicHandler as UC
 
 -- the shared Router type
 type Router m =
-  (MonadUnliftIO m, MonadIO m, UC.Logger m) =>
+  (MonadUnliftIO m, UC.Logger m) =>
   UC.LogicHandler m ->
   (forall a. m a -> IO a) ->
   IO Wai.Application

@@ -80,14 +80,13 @@ resetDbAndFlushLogs conn = do
   truncateTable conn
   pure (userRepo conn, conn, logs)
   where
-    emptyLogs = newTVarIO $ Logger.Logs []
-    userRepo :: HConn.Connection -> UC.UserRepo App
-    userRepo c =
+    emptyLogs = newTVarIO []
+    userRepo conn =
       UC.UserRepo
-        (Storage.insertUserPswd c)
-        (Storage.getUserByID c)
-        (Storage.getUserByEmail c)
-        (Storage.getUserByName c)
+        (Storage.insertUserPswd conn)
+        (Storage.getUserByID conn)
+        (Storage.getUserByEmail conn)
+        (Storage.getUserByName conn)
         undefined
 
 truncateTable :: (MonadFail m, MonadIO m) => HConn.Connection -> m ()
