@@ -106,3 +106,11 @@ dropColumnStmt =
 restoreColumnStmt :: HS.Statement () ()
 restoreColumnStmt =
   HS.Statement "ALTER TABLE users ADD COLUMN uid UUID NOT NULL UNIQUE" HE.noParams HD.noResult True
+
+emptyPassword = D.Password ""
+
+userUUID = fakeUUID1
+
+user = D.User userUUID (D.Name "userName") (D.Email "user@email.com")
+
+otherUser = D.User fakeUUID2 (D.Name "otherUserName") (D.Email "otherUser@email.com")

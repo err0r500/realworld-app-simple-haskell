@@ -15,11 +15,3 @@ getUUID :: Text -> UUID.UUID
 getUUID txt = do
   let Just uuid = UUID.fromText txt
   uuid
-
-userUUID = fakeUUID1
-
-user = D.User userUUID (D.Name "userName") (D.Email "user@email.com")
-
-emptyPassword = D.Password ""
-
-otherUser = D.User fakeUUID2 (D.Name "otherUserName") (D.Email "otherUser@email.com")
